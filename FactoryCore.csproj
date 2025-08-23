@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <RootNamespace>FactoryCore</RootNamespace>
+        <Configurations>Debug;Release</Configurations>
+        <Nullable>enable</Nullable>
+        <AssemblyName>FactoryCore</AssemblyName>
+        <LangVersion>latest</LangVersion>
+        <Optimize>False</Optimize>
+        <DebugType>embedded</DebugType>
+    </PropertyGroup>
+    <ItemGroup>
+        <Content Include=".github\workflows\build.yml" />
+    </ItemGroup>
+    <ItemGroup>
+      <Reference Include="UnityEngine.InputForUIModule">
+        <HintPath>E:\SteamLibrary\steamapps\common\Mage Arena\MageArena_Data\Managed\UnityEngine.InputForUIModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.InputModule">
+        <HintPath>E:\SteamLibrary\steamapps\common\Mage Arena\MageArena_Data\Managed\UnityEngine.InputModule.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <Import Project="..\btd6.targets" />
+</Project>

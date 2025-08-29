@@ -9,26 +9,24 @@ using UnityEngine;
 
 namespace FactoryCore.API.ModuleValues
 {
-    public class FloatModuleProperty : ModuleProperty
+    public class StringModuleProperty : ModuleProperty
     {
-        protected float DefaultValue;
-        protected float MinValue;
-        protected float MaxValue;
-        public FloatModuleProperty(string name, float defaultValue, float minValue, float maxValue)
+        protected string DefaultValue;
+        protected int MaxLength;
+        public StringModuleProperty(string name, string defaultValue, int maxLength)
         {
             DefaultValue = defaultValue;
-            MinValue = minValue;
-            MaxValue = maxValue;
+            MaxLength = maxLength;
             Name = name;
         }
         public override ModHelperPanel GetVisual(ModHelperPanel root)
         {
-            var panel = root.AddPanel(new Info("FloatModuleValue", 0, 0, 1000, 100));
+            var panel = root.AddPanel(new Info("StringModuleValue", 0, 0, 1000, 100));
             panel.AddText(new Info("Text", -200, 0, 500, 50), $"{Name}", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
-            panel.AddInputField(new Info("Input", 250, 0, 400, 50), Module.GetValue<float>(Name).ToString(), VanillaSprites.BlueInsertPanel, new Action<string>((value) =>
+            panel.AddInputField(new Info("Input", 250, 0, 400, 50), Module.GetValue<string>(Name).ToString(), VanillaSprites.BlueInsertPanel, new Action<string>((value) =>
             {
-                Module.SetValue(float.Parse(value), Name);
-            }), 30, Il2CppTMPro.TMP_InputField.CharacterValidation.Decimal);
+                Module.SetValue(value, Name);
+            }), 30).InputField.characterLimit = MaxLength;
             return panel;
         }
         public override void LoadData()

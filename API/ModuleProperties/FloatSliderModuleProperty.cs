@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace FactoryCore.API.ModuleValues
 {
-    internal class FloatSliderModuleProperty : FloatModuleProperty
+    public class FloatSliderModuleProperty : FloatModuleProperty
     {
         protected float StepSize;
 

@@ -14,5 +14,7 @@ namespace FactoryCore.API
         public Guid Id;
         public Type Type;
         public List<Guid> InputsGuids = new List<Guid>();
+        public Func<object> OutputFunc;
+        
     }
 }

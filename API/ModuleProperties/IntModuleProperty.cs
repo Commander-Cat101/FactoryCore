@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace FactoryCore.API.ModuleValues
 {
-    internal class IntModuleProperty : ModuleProperty
+    public class IntModuleProperty : ModuleProperty
     {
 
         protected int DefaultValue;
@@ -29,7 +29,7 @@ namespace FactoryCore.API.ModuleValues
             panel.AddInputField(new Info("Input", 250, 0, 400, 50), Module.GetValue<int>(Name).ToString(), VanillaSprites.BlueInsertPanel, new Action<string>((value) =>
             {
                 Module.SetValue(int.Parse(value), Name);
-            }), 30, Il2CppTMPro.TMP_InputField.CharacterValidation.Integer);
+            }), 30, Il2CppTMPro.TMP_InputField.CharacterValidation.Integer).InputField.characterLimit = 9;
             return panel;
         }
         public override void LoadData()

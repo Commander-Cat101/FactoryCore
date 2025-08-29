@@ -16,6 +16,7 @@ namespace FactoryCore.API
 {
     public abstract class Module
     {
+        public virtual bool IsRemovable { get; } = true;
         public abstract string Name { get; }
 
         public Guid Id;
@@ -25,6 +26,9 @@ namespace FactoryCore.API
         public List<ModuleOutput> Outputs = new List<ModuleOutput>();
 
         public List<ModuleInput> Inputs = new List<ModuleInput>();
+
+        [JsonIgnore]
+        public Template Template;
 
         public float XPosition;
         public float YPosition;
@@ -41,11 +45,11 @@ namespace FactoryCore.API
                 return;
             Inputs.Add(new ModuleInput() { Type = typeof(T), Id = Guid.NewGuid(), Name = name });
         }
-        protected void AddOutput<T>(string name)
+        protected void AddOutput<T>(string name, Func<object> getValue)
         {
             if (Outputs.Any(a => a.Name == name))
                 return;
-            Outputs.Add(new ModuleOutput() { Type = typeof(T), Id = Guid.NewGuid(), Name = name });
+            Outputs.Add(new ModuleOutput() { Type = typeof(T), Id = Guid.NewGuid(), Name = name, OutputFunc = getValue });
         }
         protected void AddProperty(ModuleProperty property)
         {
@@ -58,6 +62,33 @@ namespace FactoryCore.API
         public void SetValue(object value, string name)
         {
             PropertiesData[name] = value;
+        }
+        public T GetInputValue<T>(string name)
+        {
+            var input = Inputs.FirstOrDefault(a => a.Name == name);
+            if (input == null)
+                throw new Exception("Input is null");
+            var linkedOutput = Template.modules.FirstOrDefault(a => a.Outputs.Any(a => a.InputsGuids.Contains(input.Id)));
+            if (linkedOutput == null)
+                throw new Exception("Output is null");
+
+            return (T)linkedOutput.Outputs.First(a => a.Id == input.OutputGuid).OutputFunc.Invoke();
+        }
+        public List<Module> GetOutputsModules(string name)
+        {
+            var modules = new List<Module>();
+
+            var output = Outputs.FirstOrDefault(a => a.Name == null);
+            if (output == null)
+                throw new Exception("Output is null");
+
+            foreach (var inputGuid in output.InputsGuids)
+            {
+                var module = Template.modules.FirstOrDefault(a => a.Inputs.Any(a => a.Id == inputGuid));
+                modules.Add(module);
+            }
+
+            return modules;
         }
         public T GetValue<T>(string name)
         {
@@ -93,8 +124,8 @@ namespace FactoryCore.API
         {
             var content = panel.AddPanel(new Info("Content", 0, 0, 650, 800, new Vector2(0.5f, 0.5f)));
             content.AddComponent<VerticalLayoutGroup>().padding = new RectOffset() { top = 35, bottom = 35 };
-            content.FitContent(ContentSizeFitter.FitMode.Unconstrained, ContentSizeFitter.FitMode.PreferredSize);
-
+            ContentSizeFitter fitter = content.FitContent(ContentSizeFitter.FitMode.Unconstrained, ContentSizeFitter.FitMode.PreferredSize);
+            
             foreach (var value in Properties)
             {
                 value.GetVisual(content);
@@ -104,7 +135,6 @@ namespace FactoryCore.API
             AddOutputVisuals(content, new Vector2(1, 0.5f), Outputs);
             AddInputVisuals(content, new Vector2(0, 0.5f), Inputs);
         }
-
 
         protected void AddOutputVisuals(ModHelperPanel content, Vector2 anchor, List<ModuleOutput> links)
         {
@@ -144,7 +174,7 @@ namespace FactoryCore.API
         {
             var image = root.AddImage(new Info("Node", 0, 0, 100, 100), Assets.ConnectionNode);
             image.AddText(new Info("Text", -100, 0, 200, 40, new Vector2(0, 0.5f)), link.Name, 40, Il2CppTMPro.TextAlignmentOptions.MidlineRight).EnableAutoSizing();
-            image.Image.color = ModuleLinkHolder.ColorByLinkType.ContainsKey(link.Type) ? ModuleLinkHolder.ColorByLinkType[link.Type] : Color.white; ;
+            image.Image.color = ValueColors.ColorByLinkType.ContainsKey(link.Type) ? ValueColors.ColorByLinkType[link.Type] : Color.white; ;
             var moduleLink = image.AddComponent<ModuleInputHolder>();
             moduleLink.link = link;
             ModuleInputHolder.GuidToHolder.Add(link.Id, moduleLink);
@@ -153,7 +183,7 @@ namespace FactoryCore.API
         {
             var image = root.AddImage(new Info("Node", 0, 0, 100, 100), Assets.ConnectionNode);
             image.AddText(new Info("Text", 100, 0, 200, 40, new Vector2(1, 0.5f)), link.Name, 40, Il2CppTMPro.TextAlignmentOptions.MidlineLeft).EnableAutoSizing();
-            image.Image.color = ModuleLinkHolder.ColorByLinkType.ContainsKey(link.Type) ? ModuleLinkHolder.ColorByLinkType[link.Type] : Color.white;
+            image.Image.color = ValueColors.ColorByLinkType.ContainsKey(link.Type) ? ValueColors.ColorByLinkType[link.Type] : Color.white;
             var moduleLink = image.AddComponent<ModuleOutputHolder>();
             moduleLink.link = link;
             ModuleOutputHolder.GuidToHolder.Add(link.Id, moduleLink);

@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace FactoryCore.API.ModuleValues
 {
-    internal class IntSliderModuleProperty : IntModuleProperty
+    public class IntSliderModuleProperty : IntModuleProperty
     {
         public IntSliderModuleProperty(string name, int defaultValue, int minValue, int maxValue) : base(name, defaultValue, minValue, maxValue)
         {

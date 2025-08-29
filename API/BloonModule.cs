@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace FactoryCore.API
 {
-    internal class BloonModule : Module
+    /*internal class BloonModule : Module
     {
         public override string Name => "Bloon";
 
@@ -28,5 +28,5 @@ namespace FactoryCore.API
             AddOutput<bool>("Visuals");
             AddOutput<float>("Number");
         }
-    }
+    }*/
 }

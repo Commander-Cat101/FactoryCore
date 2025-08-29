@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace FactoryCore
 {
-    internal static class SerializationHandler
+    /*internal static class SerializationHandler
     {
         internal static JsonSerializerSettings Settings => new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto, Formatting = Formatting.Indented };
         internal static string FolderDirectory => Path.Combine(MelonEnvironment.ModsDirectory, "Factory");
@@ -39,5 +39,5 @@ namespace FactoryCore
             var content = JsonConvert.DeserializeObject<Template>(File.ReadAllText(path), Settings);
             return content;
         }
-    }
+    }*/
 }

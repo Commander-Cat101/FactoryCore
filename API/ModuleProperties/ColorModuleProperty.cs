@@ -11,7 +11,7 @@ using static Il2CppSystem.Linq.Expressions.Interpreter.NullableMethodCallInstruc
 
 namespace FactoryCore.API.ModuleProperties
 {
-    internal class ColorModuleProperty : ModuleProperty
+    public class ColorModuleProperty : ModuleProperty
     {
         protected Color defaultColor;
         public ColorModuleProperty(string name, Color DefaultColor)

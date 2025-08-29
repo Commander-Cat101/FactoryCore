@@ -17,18 +17,10 @@ using UnityEngine.UI;
 
 namespace FactoryCore.UI
 {
-    internal class EditorUI : ModGameMenu<HotkeysScreen>
+    public abstract class EditorUI : ModGameMenu<HotkeysScreen>
     {
         public static EditorUI Instance;
-
-        public List<Category> Categories = new List<Category>()
-        {
-            new BloonCategory(),
-            new BloonCategory(),
-            new BloonCategory(),
-            new BloonCategory(),
-            new BloonCategory(),
-        };
+        public abstract List<Category> Categories { get; }
 
         public DragComponent? DragObject;
         public bool IsDraggingBackground;
@@ -39,14 +31,12 @@ namespace FactoryCore.UI
         public ModHelperPanel ExtrasPanel;
 
         public Canvas Canvas;
-        private Template Template;
+        public static Template Template;
 
         public GameObject? HoveredGameObject;
         public override bool OnMenuOpened(Il2CppSystem.Object data)
         {
             Instance = this;
-
-            Template = SerializationHandler.LoadTemplate();
 
             CommonForegroundScreen.instance.GetComponentInParent<Canvas>().sortingOrder = 11;
             CommonForegroundHeader.SetText("Editor");
@@ -56,14 +46,14 @@ namespace FactoryCore.UI
             MenuContent = GameMenu.gameObject.AddModHelperPanel(new Info("RootContent"));
 
             CreateExtras();
-            LoadTemplate();
+            LoadTemplateUI();
 
             return false;
         }
         public override void OnMenuClosed()
         {
             CommonForegroundScreen.instance.GetComponentInParent<Canvas>().sortingOrder = 3;
-            SerializationHandler.SaveTemplate(Template);
+            SaveTemplate();
         }
         public override void OnMenuUpdate()
         {
@@ -147,26 +137,31 @@ namespace FactoryCore.UI
             var dragBar = moduleRoot.AddPanel(new Info("DragBar", 0, 0, 1000, 150), VanillaSprites.MainBGPanelBlue);
             dragBar.AddComponent<DraggableTab>().Init(moduleRoot.transform);
             dragBar.AddText(new Info("Text", 0, 0, 900, 100, new Vector2(0.5f, 0.5f)), module.Name, 60, Il2CppTMPro.TextAlignmentOptions.MidlineLeft).EnableAutoSizing();
-            dragBar.AddButton(new Info("Delete", -75, 0, 100, 100, new Vector2(1, 0.5f)), VanillaSprites.AddRemoveBtn, new Action(() =>
+            if (module.IsRemovable)
             {
-                holder.Delete();
-                Template.modules.Remove(module);
-            }));
+                dragBar.AddButton(new Info("Delete", -75, 0, 100, 100, new Vector2(1, 0.5f)), VanillaSprites.AddRemoveBtn, new Action(() =>
+                {
+                    holder.Delete();
+                    Template.modules.Remove(module);
+                }));
+            }
             dragBar.transform.SetSiblingIndex(0);
         }
         public void CreateModule(Type moduleType)
         {
             Module module = (Module)Activator.CreateInstance(moduleType);
+            module.Template = Template;
             Template.AddModule(module);
             module.Position = Canvas.transform.position;
             CreateModuleUI(module);
         }
-        public void LoadTemplate()
+        public void LoadTemplateUI()
         {
             foreach (var module in Template.modules)
             {
                 CreateModuleUI(module);
             }
         }
+        public abstract void SaveTemplate();
     }
 }

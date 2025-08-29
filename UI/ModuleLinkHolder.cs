@@ -18,11 +18,6 @@ namespace FactoryCore.UI
     [RegisterTypeInIl2Cpp]
     internal class ModuleLinkHolder : DragComponent
     {
-        public static Dictionary<Type, Color> ColorByLinkType = new Dictionary<Type, Color>()
-        {
-            { typeof(float), Color.red },
-            { typeof(bool), Color.blue }
-        };
         public bool isInput;
         public ModuleLinkHolder(IntPtr ptr) : base(ptr) { }
 
@@ -45,7 +40,7 @@ namespace FactoryCore.UI
             var image = obj.gameObject.AddComponent<Image>();
             tempLine = obj.GetComponent<RectTransform>();
             obj.transform.localScale = Vector3.one;
-            image.color = ColorByLinkType.ContainsKey(link.Type) ? ColorByLinkType[link.Type] : Color.white;
+            image.color =  ValueColors.ColorByLinkType.ContainsKey(link.Type) ? ValueColors.ColorByLinkType[link.Type] : Color.white;
         }
         public void Update()
         {
@@ -80,7 +75,7 @@ namespace FactoryCore.UI
             if (target.link.Type != link.Type) return;
             if (linkConnections.ContainsKey(target)) return;
 
-            var obj = LineBetweenObjects.Create(ColorByLinkType.ContainsKey(link.Type) ? ColorByLinkType[link.Type] : Color.white, transform, target.transform, transform);
+            var obj = LineBetweenObjects.Create(ValueColors.ColorByLinkType.ContainsKey(link.Type) ? ValueColors.ColorByLinkType[link.Type] : Color.white, transform, target.transform, transform);
             linkConnections.Add(target, obj);
             target.linkConnections.Add(this, obj);
         }

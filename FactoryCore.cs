@@ -16,11 +16,11 @@ public class FactoryCore : BloonsTD6Mod
     {
         ModHelper.Msg<FactoryCore>("FactoryCore loaded!");
     }
-    public override void OnUpdate()
+    /*public override void OnUpdate()
     {
         if (Input.GetKeyDown(KeyCode.K))
         {
             ModGameMenu.Open<EditorUI>();
         }
-    }
+    }*/
 }

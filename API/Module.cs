@@ -19,20 +19,31 @@ namespace FactoryCore.API
         public virtual bool IsRemovable { get; } = true;
         public abstract string Name { get; }
 
+        public virtual string Description { get; } = string.Empty;
+
+        [JsonInclude]
         public Guid Id;
 
+        [JsonInclude]
         public Dictionary<string, object> PropertiesData = new Dictionary<string, object>();
 
+        [JsonInclude]
         public List<ModuleOutput> Outputs = new List<ModuleOutput>();
 
+        [JsonInclude]
         public List<ModuleInput> Inputs = new List<ModuleInput>();
+
+        [JsonInclude]
+        public float XPosition;
+
+        [JsonInclude]
+        public float YPosition;
 
         [JsonIgnore]
         public Template Template;
 
-        public float XPosition;
-        public float YPosition;
-
+        [JsonIgnore]
+        public bool HasInited = false;
 
         [JsonIgnore]
         public Vector2 Position { get => new Vector2(XPosition, YPosition); set { XPosition = value.x; YPosition = value.y; } }
@@ -47,8 +58,12 @@ namespace FactoryCore.API
         }
         protected void AddOutput<T>(string name, Func<object> getValue)
         {
-            if (Outputs.Any(a => a.Name == name))
+            var existingOutput = Outputs.FirstOrDefault(a => a.Name == name);
+            if (existingOutput != null)
+            {
+                existingOutput.OutputFunc = getValue;
                 return;
+            }
             Outputs.Add(new ModuleOutput() { Type = typeof(T), Id = Guid.NewGuid(), Name = name, OutputFunc = getValue });
         }
         protected void AddProperty(ModuleProperty property)
@@ -78,7 +93,7 @@ namespace FactoryCore.API
         {
             var modules = new List<Module>();
 
-            var output = Outputs.FirstOrDefault(a => a.Name == null);
+            var output = Outputs.FirstOrDefault(a => a.Name == name);
             if (output == null)
                 throw new Exception("Output is null");
 
@@ -119,7 +134,10 @@ namespace FactoryCore.API
         {
 
         }
+        public virtual void ProcessModule()
+        {
 
+        }
         public virtual void SetupVisual(ModHelperPanel panel, ModuleHolder holder)
         {
             var content = panel.AddPanel(new Info("Content", 0, 0, 650, 800, new Vector2(0.5f, 0.5f)));
@@ -191,6 +209,8 @@ namespace FactoryCore.API
 
         public void Init()
         {
+            if (HasInited) return;
+            HasInited = true;
             GetLinkNodes();
             GetModuleProperties();
         }

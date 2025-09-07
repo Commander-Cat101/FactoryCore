@@ -20,9 +20,10 @@ namespace FactoryCore.API.ModuleProperties
         {
             var panel = root.AddPanel(new Info("EnumModuleProperty", 0, 0, 1000, 100));
 
-            panel.AddText(new Info("Text", -250, 0, 400, 50), $"{Name}", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
+            panel.AddText(new Info("Text", -250, 0, 400, 100), $"{Name}", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
 
             var text = panel.AddText(new Info("Type", 200, 0, 300, 50), Options[Module.GetValue<int>(Name)]);
+            text.Text.overflowMode = Il2CppTMPro.TextOverflowModes.Overflow;
 
             var left = panel.AddButton(new Info("Left", 0, 0, 75, 75), VanillaSprites.Arrow, new Action(() =>
             {
@@ -47,9 +48,9 @@ namespace FactoryCore.API.ModuleProperties
         internal void ChangeValue(int change)
         {
             var value = Module.GetValue<int>(Name) + change;
-            while (value < 0)
+            if (value < 0)
                 value = Options.Length;
-            while (value > Options.Length)
+            if (value >= Options.Length)
                 value = 0;
             Module.SetValue(value, Name);
         }

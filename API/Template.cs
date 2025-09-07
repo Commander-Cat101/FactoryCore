@@ -23,7 +23,7 @@ namespace FactoryCore.API
             var list = new List<T>();
             foreach (var module in modules)
             {
-                if (typeof(T) == module.GetType())
+                if (typeof(T) == module.GetType() || module.GetType().IsSubclassOf(typeof(T)))
                     list.Add((T)module);
             }
             return list;

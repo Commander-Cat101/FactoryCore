@@ -28,7 +28,7 @@ namespace FactoryCore.UI
         }
         public void Update()
         {
-            Module.Position = Root.transform.position;
+            Module.Position = Root.transform.localPosition;
         }
         public void Delete()
         {

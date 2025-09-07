@@ -82,13 +82,12 @@ namespace FactoryCore.UI
             hoverPanel = panel?.AddPanel(new Info("ComponentSelect", 250, 0, 500, 100, new Vector2(1, 0.5f)), VanillaSprites.MainBGPanelBlue);
             hoverPanel.AddLayoutElement().ignoreLayout = true;
 
-
             var layout = hoverPanel.AddComponent<VerticalLayoutGroup>();
             layout.childAlignment = TextAnchor.MiddleCenter;
             layout.childControlHeight = false;
             layout.childControlWidth = false;
-            layout.padding = new RectOffset() { top = 25, bottom = 25 };
-            layout.spacing = 25;
+            layout.padding = new RectOffset() { top = 50, bottom = 50 };
+            layout.spacing = 50;
             hoverPanel.FitContent(ContentSizeFitter.FitMode.Unconstrained, ContentSizeFitter.FitMode.PreferredSize);
 
             foreach (var moduleType in tab.category.Modules)
@@ -102,10 +101,11 @@ namespace FactoryCore.UI
         }
         public void CreateModule(ModHelperPanel panel, Type moduleType)
         {
-            var modulePanel = panel.AddPanel(new Info("Module", 0, 0, 550, 60));
+            var modulePanel = panel.AddPanel(new Info("Module", 0, 0, 450, 70));
 
             var module = (Module)Activator.CreateInstance(moduleType);
-            modulePanel.AddText(new Info("Text", 500, 60), module.Name, 40).EnableAutoSizing();
+            var text = modulePanel.AddText(new Info("Text", 450, 70), module.Name, 50);
+            text.Text.overflowMode = Il2CppTMPro.TextOverflowModes.Overflow;
             modulePanel.AddComponent<ModuleTab>().moduleType = moduleType;
         }
     }

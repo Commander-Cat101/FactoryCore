@@ -5,6 +5,7 @@ using BTD_Mod_Helper.Extensions;
 using FactoryCore.API;
 using FactoryCore.UI.Components;
 using Il2CppAssets.Scripts.Unity.UI_New;
+using Il2CppAssets.Scripts.Unity.UI_New.Popups;
 using Il2CppAssets.Scripts.Unity.UI_New.Settings;
 using Il2CppNinjaKiwi.Common;
 using MelonLoader;
@@ -42,12 +43,11 @@ namespace FactoryCore.UI
             CommonForegroundHeader.SetText("Editor");
             GameMenu.transform.DestroyAllChildren();
             Canvas = GameMenu.GetComponentInParent<Canvas>();
-            Canvas.sortingOrder = 10;
-            MenuContent = GameMenu.gameObject.AddModHelperPanel(new Info("RootContent"));
+            Canvas.sortingOrder = 9;
+            MenuContent = GameMenu.gameObject.AddModHelperPanel(new Info("RootContent", 0, 0, new Vector2(0.5f, 0.5f)));
 
             CreateExtras();
             LoadTemplateUI();
-
             return false;
         }
         public override void OnMenuClosed()
@@ -127,7 +127,7 @@ namespace FactoryCore.UI
             module.Init();
 
             var moduleRoot = MenuContent.AddPanel(new Info("ModuleRoot", 0, 0, 0, 0));
-            moduleRoot.transform.position = new Vector3(module.XPosition, module.YPosition, 0);
+            moduleRoot.transform.localPosition = new Vector3(module.XPosition, module.YPosition, 0);
             moduleRoot.AddComponent<VerticalLayoutGroup>();
 
             var component = moduleRoot.AddPanel(new Info("Component", 1000, 700) { AnchorMax = Vector2.one, AnchorMin = Vector2.zero }, VanillaSprites.MainBGPanelBlue, RectTransform.Axis.Vertical, 0, 0);
@@ -143,6 +143,13 @@ namespace FactoryCore.UI
                 {
                     holder.Delete();
                     Template.modules.Remove(module);
+                }));
+            }
+            if (module.Description != string.Empty)
+            {
+                dragBar.AddButton(new Info("Info", module.IsRemovable ? -200 : -75, 0, 100, 100, new Vector2(1, 0.5f)), VanillaSprites.InfoBtn2, new Action(() =>
+                {
+                    PopupScreen.instance.SafelyQueue(screen => screen.ShowPopup(PopupScreen.Placement.inGameCenter, "Info", module.Description, null, "Ok", null, null, Popup.TransitionAnim.Scale));
                 }));
             }
             dragBar.transform.SetSiblingIndex(0);

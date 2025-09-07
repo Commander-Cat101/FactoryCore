@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FactoryCore.API.ModuleProperties
 {
-    /*internal class MultipleEnumModuleProperty : ModuleProperty
+    internal class MultipleEnumModuleProperty : ModuleProperty
     {
         public string[] Options;
         public int DefaultValue;
@@ -46,5 +46,5 @@ namespace FactoryCore.API.ModuleProperties
             if (!Module.HasValue(Name))
                 Module.SetValue(DefaultValue, Name);
         }
-    }*/
+    }
 }

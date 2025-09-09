@@ -27,6 +27,8 @@ namespace FactoryCore.API.ModuleValues
             panel.AddText(new Info("Text", -200, 0, 500, 50), $"{Name}", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
             panel.AddInputField(new Info("Input", 250, 0, 400, 50), Module.GetValue<float>(Name).ToString(), VanillaSprites.BlueInsertPanel, new Action<string>((value) =>
             {
+                if (float.TryParse(value, out float result))
+                    Module.SetValue(result, Name);
                 Module.SetValue(float.Parse(value), Name);
             }), 30, Il2CppTMPro.TMP_InputField.CharacterValidation.Decimal);
             return panel;

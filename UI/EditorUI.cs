@@ -119,7 +119,7 @@ namespace FactoryCore.UI
         {
             var panel = ModHelperPanel.Create(new Info(category.Name, 550, 60));
             panel.AddComponent<CategoryTab>().category = category;
-            panel.AddText(new Info("Text", 550, 60), category.Name + "   >", 40).EnableAutoSizing();
+            panel.AddText(new Info("Text", 550, 60), category.Name + "  >", 40).EnableAutoSizing();
             return panel;
         }
         public void CreateModuleUI(Module module)
@@ -130,11 +130,11 @@ namespace FactoryCore.UI
             moduleRoot.transform.localPosition = new Vector3(module.XPosition, module.YPosition, 0);
             moduleRoot.AddComponent<VerticalLayoutGroup>();
 
-            var component = moduleRoot.AddPanel(new Info("Component", 1000, 700) { AnchorMax = Vector2.one, AnchorMin = Vector2.zero }, VanillaSprites.MainBGPanelBlue, RectTransform.Axis.Vertical, 0, 0);
+            var component = moduleRoot.AddPanel(new Info("Component", 1000, 700, new Vector2(0.5f, 0.5f)), VanillaSprites.MainBGPanelBlue, RectTransform.Axis.Vertical, 0, 0);
             var holder = component.AddComponent<ModuleHolder>().Init(module, moduleRoot, component);
             component.FitContent(ContentSizeFitter.FitMode.Unconstrained, ContentSizeFitter.FitMode.PreferredSize);
 
-            var dragBar = moduleRoot.AddPanel(new Info("DragBar", 0, 0, 1000, 150), VanillaSprites.MainBGPanelBlue);
+            var dragBar = moduleRoot.AddPanel(new Info("DragBar", 0, 0, 1000, 150, new Vector2(0.5f, 0.5f)), VanillaSprites.MainBGPanelBlue);
             dragBar.AddComponent<DraggableTab>().Init(moduleRoot.transform);
             dragBar.AddText(new Info("Text", 0, 0, 900, 100, new Vector2(0.5f, 0.5f)), module.Name, 60, Il2CppTMPro.TextAlignmentOptions.MidlineLeft).EnableAutoSizing();
             if (module.IsRemovable)

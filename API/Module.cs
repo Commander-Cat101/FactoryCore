@@ -43,7 +43,7 @@ namespace FactoryCore.API
         public Template Template;
 
         [JsonIgnore]
-        public bool HasInited = false;
+        internal bool HasInited = false;
 
         [JsonIgnore]
         public Vector2 Position { get => new Vector2(XPosition, YPosition); set { XPosition = value.x; YPosition = value.y; } }

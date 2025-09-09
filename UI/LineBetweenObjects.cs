@@ -1,4 +1,5 @@
-﻿using MelonLoader;
+﻿using Il2CppAssets.Scripts.Unity;
+using MelonLoader;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,8 @@ namespace FactoryCore.UI
     internal class LineBetweenObjects : MonoBehaviour
     {
         Transform obj1, obj2;
+
+        public Canvas canvas;
         public static GameObject Create(Color color, Transform obj1, Transform obj2, Transform parent)
         {
             var obj = new GameObject("Line");
@@ -29,16 +32,18 @@ namespace FactoryCore.UI
             var comp = obj.AddComponent<LineBetweenObjects>();
             comp.obj1 = obj1;
             comp.obj2 = obj2;
+            comp.canvas = parent.GetComponentInParent<Canvas>();
             return obj;
         }
 
         public void Update()
         {
             transform.position = (obj1.transform.position + obj2.position) / 2;
-            Vector3 dif = transform.position - obj2.position;
+            Vector3 dif = obj1.position - obj2.position;
+            transform.right = dif.normalized;
+            GetComponent<RectTransform>().sizeDelta = new Vector3(dif.magnitude / canvas.scaleFactor, 25);
 
-            GetComponent<RectTransform>().sizeDelta = new Vector3(dif.magnitude * 4.75f, 25);
-            GetComponent<RectTransform>().rotation = Quaternion.Euler(new Vector3(0, 0, 180 * Mathf.Atan(dif.y / dif.x) / Mathf.PI));
+            //GetComponent<RectTransform>().rotation = Quaternion.Euler(new Vector3(0, 0, 180 * Mathf.Atan(dif.y / dif.x) / Mathf.PI));
         }
     }
 }

@@ -34,6 +34,7 @@ namespace FactoryCore.API
             foreach (var module in modules)
             {
                 module.Template = this;
+                module.Init();
             }
         }
     }

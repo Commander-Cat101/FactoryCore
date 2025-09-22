@@ -10,8 +10,11 @@ using Il2CppAssets.Scripts.Unity.UI_New.Settings;
 using Il2CppNinjaKiwi.Common;
 using MelonLoader;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -22,13 +25,15 @@ namespace FactoryCore.UI
     {
         public static EditorUI Instance;
         public abstract List<Category> Categories { get; }
+        public abstract Type CenteredModule { get; }
 
         public DragComponent? DragObject;
         public bool IsDraggingBackground;
         public Vector3 MouseLastPosition;
 
-        public float Scaling = 1;
+        public static float Scaling = 1;
         public static ModHelperPanel MenuContent;
+        public static ModHelperPanel ScalePanel;
         public ModHelperPanel ExtrasPanel;
 
         public Canvas Canvas;
@@ -37,22 +42,34 @@ namespace FactoryCore.UI
         public GameObject? HoveredGameObject;
         public override bool OnMenuOpened(Il2CppSystem.Object data)
         {
+            Scaling = 1;
             Instance = this;
 
-            CommonForegroundScreen.instance.GetComponentInParent<Canvas>().sortingOrder = 11;
             CommonForegroundHeader.SetText("Editor");
+
             GameMenu.transform.DestroyAllChildren();
+            GameMenu.saved = true;
+
             Canvas = GameMenu.GetComponentInParent<Canvas>();
-            Canvas.sortingOrder = 9;
-            MenuContent = GameMenu.gameObject.AddModHelperPanel(new Info("RootContent", 0, 0, new Vector2(0.5f, 0.5f)));
+            Canvas.sortingOrder = 5;
+            CommonForegroundScreen.instance.GetComponentInParent<Canvas>().sortingOrder = 11;
+
+            ScalePanel = GameMenu.gameObject.AddModHelperPanel(new Info("ScalePanel"));
+            MenuContent = ScalePanel.gameObject.AddModHelperPanel(new Info("RootContent", 0, 0, new Vector2(0.5f, 0.5f)));
 
             CreateExtras();
-            LoadTemplateUI();
+
+            var module = Template.GetModulesOfType(CenteredModule).FirstOrDefault();
+            if (module != null)
+                MenuContent.gameObject.transform.localPosition = -module.Position - new Vector2(500, 0);
+
+            MelonCoroutines.Start(LoadTemplate());
+
             return false;
         }
         public override void OnMenuClosed()
         {
-            CommonForegroundScreen.instance.GetComponentInParent<Canvas>().sortingOrder = 3;
+            CommonForegroundScreen.instance.GetComponentInParent<Canvas>().sortingOrder = 6;
             SaveTemplate();
         }
         public override void OnMenuUpdate()
@@ -85,6 +102,19 @@ namespace FactoryCore.UI
             EventSystem.current.RaycastAll(pointer, raycastResultsIL2CPP);
             List<RaycastResult> raycastResults = raycastResultsIL2CPP.ToList().Where(a => a.gameObject.GetComponentInParent<CommonBackgroundScreen>() == null).ToList();
             HoveredGameObject = raycastResults.FirstOrDefault()?.gameObject;
+
+            if (Input.mouseScrollDelta.y != 0)
+            {
+                
+                float prevScale = Scaling;
+                Scaling = Mathf.Clamp(Scaling + (Input.mouseScrollDelta.y / 10), 0.5f, 2.5f);
+                if (Scaling == prevScale)
+                    return;
+                float scaleDiff = Scaling - prevScale;
+                var mousePos = Input.mousePosition;
+
+                ScalePanel.transform.localScale = Vector3.one * Scaling;
+            }
         }
         public void CreateExtras()
         {
@@ -94,10 +124,7 @@ namespace FactoryCore.UI
             var tab = panel.AddComponent<CreateModuleMenu>();
             tab.panel = panel;
 
-            var addbutton = panel.AddButton(new Info("AddComponentButton", 100, 150, 200, 200, new Vector2(0, 1)), VanillaSprites.AddMoreBtn, new Action(() =>
-            {
-                tab.ToggleTab();
-            }));
+            var addbutton = panel.AddButton(new Info("AddComponentButton", 100, 150, 200, 200, new Vector2(0, 1)), VanillaSprites.AddMoreBtn, new Action(tab.ToggleTab));
             addbutton.AddLayoutElement().ignoreLayout = true;
 
             var layout = panel.AddComponent<VerticalLayoutGroup>();
@@ -122,9 +149,8 @@ namespace FactoryCore.UI
             panel.AddText(new Info("Text", 550, 60), category.Name + "  >", 40).EnableAutoSizing();
             return panel;
         }
-        public void CreateModuleUI(Module module)
+        public ModHelperPanel CreateModuleUI(Module module)
         {
-            module.Init();
 
             var moduleRoot = MenuContent.AddPanel(new Info("ModuleRoot", 0, 0, 0, 0));
             moduleRoot.transform.localPosition = new Vector3(module.XPosition, module.YPosition, 0);
@@ -136,7 +162,7 @@ namespace FactoryCore.UI
 
             var dragBar = moduleRoot.AddPanel(new Info("DragBar", 0, 0, 1000, 150, new Vector2(0.5f, 0.5f)), VanillaSprites.MainBGPanelBlue);
             dragBar.AddComponent<DraggableTab>().Init(moduleRoot.transform);
-            dragBar.AddText(new Info("Text", 0, 0, 900, 100, new Vector2(0.5f, 0.5f)), module.Name, 60, Il2CppTMPro.TextAlignmentOptions.MidlineLeft).EnableAutoSizing();
+            dragBar.AddText(new Info("Text", 400, 0, 700, 100, new Vector2(0f, 0.5f)), module.Name, 60, Il2CppTMPro.TextAlignmentOptions.MidlineLeft).EnableAutoSizing();
             if (module.IsRemovable)
             {
                 dragBar.AddButton(new Info("Delete", -75, 0, 100, 100, new Vector2(1, 0.5f)), VanillaSprites.AddRemoveBtn, new Action(() =>
@@ -153,14 +179,17 @@ namespace FactoryCore.UI
                 }));
             }
             dragBar.transform.SetSiblingIndex(0);
+
+            return moduleRoot;
         }
         public void CreateModule(Type moduleType)
         {
             Module module = (Module)Activator.CreateInstance(moduleType);
             module.Template = Template;
             Template.AddModule(module);
-            module.Position = Canvas.transform.position;
-            CreateModuleUI(module);
+            module.Init();
+            Vector2 pos = new Vector2(GameMenu.transform.position.x - (500 * Canvas.scaleFactor * Scaling), GameMenu.transform.position.y);
+            CreateModuleUI(module).transform.position = pos;
         }
         public void LoadTemplateUI()
         {
@@ -168,6 +197,30 @@ namespace FactoryCore.UI
             {
                 CreateModuleUI(module);
             }
+        }
+        public IEnumerator LoadTemplate()
+        {
+            List<int> generateTimes = new List<int>();
+            foreach (var module in Template.modules)
+            {
+                try
+                {
+                    module.Init();
+                }
+                catch (Exception e)
+                {
+                    MelonLogger.Error(e);
+                }
+            }
+            foreach (var module in Template.modules)
+            {
+                var watch = Stopwatch.StartNew();
+                CreateModuleUI(module);
+                watch.Stop();
+                generateTimes.Add((int)watch.ElapsedMilliseconds);
+                yield return null;
+            }
+            MelonLogger.Msg($"Loaded modules in {generateTimes.Average()}ms per module");
         }
         public abstract void SaveTemplate();
     }

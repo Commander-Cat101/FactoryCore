@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace FactoryCore.UI
 {
-    [RegisterTypeInIl2Cpp]
+    [RegisterTypeInIl2Cpp(false)]
     public class ModuleHolder : MonoBehaviour
     {
         public Module Module;

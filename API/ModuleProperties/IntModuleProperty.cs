@@ -1,7 +1,9 @@
 ﻿using BTD_Mod_Helper.Api.Components;
 using BTD_Mod_Helper.Api.Enums;
+using MelonLoader;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,11 +28,24 @@ namespace FactoryCore.API.ModuleValues
         {
             var panel = root.AddPanel(new Info("IntModuleValue", 0, 0, 1000, 100));
             panel.AddText(new Info("Text", -200, 0, 500, 50), $"{Name}", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
-            panel.AddInputField(new Info("Input", 250, 0, 400, 50), Module.GetValue<int>(Name).ToString(), VanillaSprites.BlueInsertPanel, new Action<string>((value) =>
+            ModHelperInputField field = null;
+            field = panel.AddInputField(new Info("Input", 250, 0, 400, 50), Module.GetValue<int>(Name).ToString(), VanillaSprites.BlueInsertPanel, new Action<string>((value) =>
+            {
+                
+            }), 30, Il2CppTMPro.TMP_InputField.CharacterValidation.Integer);
+
+            field.InputField.onEndEdit.AddListener(new Action<string>((value) =>
             {
                 if (int.TryParse(value, out int result))
+                {
+                    result = Math.Clamp(result, MinValue, MaxValue);
+                    field?.SetText(result.ToString(), false);
                     Module.SetValue(result, Name);
-            }), 30, Il2CppTMPro.TMP_InputField.CharacterValidation.Integer).InputField.characterLimit = 9;
+                }
+            }));
+
+            field.InputField.characterLimit = 9;
+
             return panel;
         }
         public override void LoadData()

@@ -12,7 +12,7 @@ using UnityEngine.UI;
 
 namespace FactoryCore.UI
 {
-    [RegisterTypeInIl2Cpp]
+    [RegisterTypeInIl2Cpp(false)]
     internal class CreateModuleMenu : MonoBehaviour
     {
         public bool isOpen = false;
@@ -96,7 +96,10 @@ namespace FactoryCore.UI
             }
             LayoutRebuilder.ForceRebuildLayoutImmediate(panel);
             var rect = hoverPanel.GetComponent<RectTransform>();
-            float y = Mathf.Clamp(tab.transform.position.y, rect.sizeDelta.y / 4.70f, EditorUI.Instance.Canvas.GetComponent<RectTransform>().rect.height - rect.sizeDelta.y / 4.70f);
+
+            float magicNumber = (EditorUI.Instance.Canvas.scaleFactor / 2);
+
+            float y = Mathf.Clamp(tab.transform.position.y, rect.sizeDelta.y * magicNumber, EditorUI.Instance.Canvas.GetComponent<RectTransform>().rect.height - rect.sizeDelta.y * magicNumber);
             hoverPanel.transform.position = hoverPanel.transform.position.WithY(y);
         }
         public void CreateModule(ModHelperPanel panel, Type moduleType)

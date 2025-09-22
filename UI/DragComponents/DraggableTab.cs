@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace FactoryCore.UI.Components
 {
-    [RegisterTypeInIl2Cpp]
+    [RegisterTypeInIl2Cpp(false)]
     public class DraggableTab : DragComponent
     {
         public DraggableTab(IntPtr ptr) : base(ptr) { }
@@ -21,6 +21,8 @@ namespace FactoryCore.UI.Components
         }
         public override void UpdateDrag(Vector3 dragDifference)
         {
+            if (RootObject == null)
+                return;
             RootObject.position += dragDifference;
         }
     }

@@ -25,12 +25,22 @@ namespace FactoryCore.API.ModuleValues
         {
             var panel = root.AddPanel(new Info("FloatModuleValue", 0, 0, 1000, 100));
             panel.AddText(new Info("Text", -200, 0, 500, 50), $"{Name}", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
-            panel.AddInputField(new Info("Input", 250, 0, 400, 50), Module.GetValue<float>(Name).ToString(), VanillaSprites.BlueInsertPanel, new Action<string>((value) =>
+            ModHelperInputField field = null;
+            field = panel.AddInputField(new Info("Input", 250, 0, 400, 50), Module.GetValue<float>(Name).ToString(), VanillaSprites.BlueInsertPanel, new Action<string>((value) =>
+            {
+                
+            }), 30, Il2CppTMPro.TMP_InputField.CharacterValidation.Decimal);
+
+            field.InputField.onEndEdit.AddListener(new Action<string>((value) =>
             {
                 if (float.TryParse(value, out float result))
+                {
+                    result = Math.Clamp(result, MinValue, MaxValue);
+                    field?.SetText(result.ToString(), false);
                     Module.SetValue(result, Name);
-                Module.SetValue(float.Parse(value), Name);
-            }), 30, Il2CppTMPro.TMP_InputField.CharacterValidation.Decimal);
+                }
+            }));
+
             return panel;
         }
         public override void LoadData()

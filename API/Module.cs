@@ -3,9 +3,11 @@ using BTD_Mod_Helper.Api.Components;
 using BTD_Mod_Helper.Api.Enums;
 using FactoryCore.API.ModuleValues;
 using Harmony;
+using MelonLoader;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.Json.Serialization;
 using UnityEngine;
@@ -16,9 +18,12 @@ namespace FactoryCore.API
 {
     public abstract class Module
     {
+        [JsonIgnore]
         public virtual bool IsRemovable { get; } = true;
+        [JsonIgnore]
         public abstract string Name { get; }
 
+        [JsonIgnore]
         public virtual string Description { get; } = string.Empty;
 
         [JsonInclude]
@@ -87,7 +92,10 @@ namespace FactoryCore.API
             if (linkedOutput == null)
                 throw new Exception("Output is null");
 
-            return (T)linkedOutput.Outputs.First(a => a.Id == input.OutputGuid).OutputFunc.Invoke();
+            ModuleOutput output = linkedOutput.Outputs.FirstOrDefault(a => a.Id == input.OutputGuid);
+            if (output == null)
+                throw new Exception("Output doesnt exist");
+            return (T)output.OutputFunc.Invoke();
         }
         public List<Module> GetOutputsModules(string name)
         {
@@ -96,6 +104,8 @@ namespace FactoryCore.API
             var output = Outputs.FirstOrDefault(a => a.Name == name);
             if (output == null)
                 throw new Exception("Output is null");
+            if (Template == null)
+                throw new Exception("Template is null");
 
             foreach (var inputGuid in output.InputsGuids)
             {
@@ -111,6 +121,8 @@ namespace FactoryCore.API
                 throw new Exception("Module doesnt contain value entry.");
             var value = PropertiesData[name];
 
+            if (value == null)
+                return (T)value;
             if (typeof(T) == typeof(int) && value.GetType() == typeof(long))
                 return (T)(object)Convert.ToInt32(value);
             if (typeof(T) == typeof(float) && value.GetType() == typeof(double))
@@ -143,15 +155,17 @@ namespace FactoryCore.API
             var content = panel.AddPanel(new Info("Content", 0, 0, 650, 800, new Vector2(0.5f, 0.5f)));
             content.AddComponent<VerticalLayoutGroup>().padding = new RectOffset() { top = 35, bottom = 35 };
             ContentSizeFitter fitter = content.FitContent(ContentSizeFitter.FitMode.Unconstrained, ContentSizeFitter.FitMode.PreferredSize);
-            
+
             foreach (var value in Properties)
             {
                 value.GetVisual(content);
             }
+
             LayoutRebuilder.ForceRebuildLayoutImmediate(content.RectTransform);
 
             AddOutputVisuals(content, new Vector2(1, 0.5f), Outputs);
             AddInputVisuals(content, new Vector2(0, 0.5f), Inputs);
+
         }
 
         protected void AddOutputVisuals(ModHelperPanel content, Vector2 anchor, List<ModuleOutput> links)

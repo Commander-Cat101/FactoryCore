@@ -16,7 +16,7 @@ using UnityEngine.UI;
 
 namespace FactoryCore.UI
 {
-    [RegisterTypeInIl2Cpp]
+    [RegisterTypeInIl2Cpp(false)]
     internal class ModuleInputHolder : MonoBehaviour
     {
         public static Dictionary<Type, Color> ColorByLinkType = new Dictionary<Type, Color>()
@@ -75,7 +75,6 @@ namespace FactoryCore.UI
         }
         public void RemoveConnections()
         {
-            MelonLogger.Msg("Remove");
             if (linkedOutput != null)
                 linkedOutput.RemoveConnection(this);
             RemoveConnection();

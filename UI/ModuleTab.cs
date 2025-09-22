@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace FactoryCore.UI
 {
-    [RegisterTypeInIl2Cpp]
+    [RegisterTypeInIl2Cpp(false)]
     internal class ModuleTab : MonoBehaviour
     {
         public Type moduleType;

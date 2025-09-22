@@ -15,7 +15,7 @@ using UnityEngine.UI;
 
 namespace FactoryCore.UI
 {
-    [RegisterTypeInIl2Cpp]
+    [RegisterTypeInIl2Cpp(false)]
     internal class ModuleOutputHolder : DragComponent
     {
         public bool isInput;
@@ -69,8 +69,9 @@ namespace FactoryCore.UI
             {
                 tempLine.transform.position = (transform.position + Input.mousePosition) / 2;
                 Vector3 dif = Input.mousePosition - tempLine.position;
-                tempLine.sizeDelta = new Vector3(dif.magnitude * 4.75f, 25);
-                tempLine.rotation = Quaternion.Euler(new Vector3(0, 0, 180 * Mathf.Atan(dif.y / dif.x) / Mathf.PI));
+
+                tempLine.right = dif.normalized;
+                tempLine.sizeDelta = new Vector3(dif.magnitude / EditorUI.Instance.Canvas.scaleFactor / EditorUI.Scaling * 2, 25);
             }
         }
         public override void EndDrag()
@@ -114,7 +115,6 @@ namespace FactoryCore.UI
         {
             if (linkConnections.TryGetValue(target, out var value))
             {
-                MelonLogger.Msg("Delete obj");
                 Destroy(value);
             }
             linkConnections.Remove(target);

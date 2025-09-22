@@ -26,7 +26,7 @@ namespace FactoryCore.API.ModuleProperties
             var panel = root.AddPanel(new Info("BoolModuleValue", 0, 0, 1000, 100));
             panel.AddText(new Info("Text", -200, 0, 500, 50), $"{Name}", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
             ModHelperButton? button = null;
-            button = panel.AddButton(new Info("Toggle", -80, 0, 60, 60, new Vector2(1, 0.5f)), "", new Action(() =>
+            button = panel.AddButton(new Info("Toggle", -150, 0, 100, 100, new Vector2(1, 0.5f)), "", new Action(() =>
             {
                 OnClick(button);
             }));

@@ -1,3 +1,5 @@
+using Semver;
+
 namespace FactoryCore;
 
 public static class ModHelperData

@@ -28,10 +28,12 @@ namespace FactoryCore.API.ModuleProperties
     public class ColorModuleProperty : ModuleProperty
     {
         protected Color defaultColor;
-        public ColorModuleProperty(string name, Color DefaultColor)
+        public bool UseAlpha;
+        public ColorModuleProperty(string name, Color DefaultColor, bool useAlpha = true)
         {
             defaultColor = DefaultColor;
             Name = name;
+            UseAlpha = useAlpha;
         }
         public override ModHelperPanel GetVisual(ModHelperPanel root)
         {
@@ -41,7 +43,7 @@ namespace FactoryCore.API.ModuleProperties
             var image = panel.AddImage(new Info("Color", -250, 0, 300, 300), sprite);
             image.Image.color = Module.GetValue<SavedColor>(Name);
 
-            var sliderR = panel.AddSlider(new Info("Slider", 225, 150, 400, 50), Module.GetValue<SavedColor>(Name).r * 255, 0, 255, 1f, new Vector2(40, 40), new Action<float>((value) =>
+            var sliderR = panel.AddSlider(new Info("Slider", 225, UseAlpha ? 150 : 100, 400, 50), Module.GetValue<SavedColor>(Name).r * 255, 0, 255, 1f, new Vector2(40, 40), new Action<float>((value) =>
             {
                 var color = Module.GetValue<SavedColor>(Name);
                 color.r = value / 255;
@@ -51,7 +53,7 @@ namespace FactoryCore.API.ModuleProperties
             sliderR.DefaultNotch.transform.localScale = Vector3.one * 0.6f;
             sliderR.AddText(new Info("RText", -275, 0, 50, 50), "R:", 50);
 
-            var sliderG = panel.AddSlider(new Info("Slider", 225, 50, 400, 50), Module.GetValue<SavedColor>(Name).g * 255, 0, 255, 1f, new Vector2(40, 40), new Action<float>((value) =>
+            var sliderG = panel.AddSlider(new Info("Slider", 225, UseAlpha ? 50 : 0, 400, 50), Module.GetValue<SavedColor>(Name).g * 255, 0, 255, 1f, new Vector2(40, 40), new Action<float>((value) =>
             {
                 var color = Module.GetValue<SavedColor>(Name);
                 color.g = value / 255;
@@ -62,7 +64,7 @@ namespace FactoryCore.API.ModuleProperties
             sliderG.AddText(new Info("GText", -275, 0, 50, 50), "G:", 50);
 
 
-            var sliderB = panel.AddSlider(new Info("Slider", 225, -50, 400, 50), Module.GetValue<SavedColor>(Name).b * 255, 0, 255, 1f, new Vector2(40, 40), new Action<float>((value) =>
+            var sliderB = panel.AddSlider(new Info("Slider", 225, UseAlpha ? -50 : -100, 400, 50), Module.GetValue<SavedColor>(Name).b * 255, 0, 255, 1f, new Vector2(40, 40), new Action<float>((value) =>
             {
                 var color = Module.GetValue<SavedColor>(Name);
                 color.b = value / 255;
@@ -72,16 +74,18 @@ namespace FactoryCore.API.ModuleProperties
             sliderB.DefaultNotch.transform.localScale = Vector3.one * 0.6f;
             sliderB.AddText(new Info("BText", -275, 0, 50, 50), "B:", 50);
 
-
-            var sliderA = panel.AddSlider(new Info("Slider", 225, -150, 400, 50), Module.GetValue<SavedColor>(Name).a * 255, 0, 255, 1f, new Vector2(40, 40), new Action<float>((value) =>
+            if (UseAlpha)
             {
-                var color = Module.GetValue<SavedColor>(Name);
-                color.a = value / 255;
-                Module.SetValue(color, Name);
-                image.Image.color = color;
-            }));
-            sliderA.DefaultNotch.transform.localScale = Vector3.one * 0.6f;
-            sliderA.AddText(new Info("AText", -275, 0, 50, 50), "A:", 50);
+                var sliderA = panel.AddSlider(new Info("Slider", 225, -150, 400, 50), Module.GetValue<SavedColor>(Name).a * 255, 0, 255, 1f, new Vector2(40, 40), new Action<float>((value) =>
+                {
+                    var color = Module.GetValue<SavedColor>(Name);
+                    color.a = value / 255;
+                    Module.SetValue(color, Name);
+                    image.Image.color = color;
+                }));
+                sliderA.DefaultNotch.transform.localScale = Vector3.one * 0.6f;
+                sliderA.AddText(new Info("AText", -275, 0, 50, 50), "A:", 50);
+            }
 
             return panel;
         }

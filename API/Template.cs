@@ -20,11 +20,15 @@ namespace FactoryCore.API
 
         public List<T> GetModulesOfType<T>() where T : Module
         {
-            var list = new List<T>();
+            return GetModulesOfType(typeof(T)).Select(a => (T)a).ToList();
+        }
+        public List<Module> GetModulesOfType(Type moduleType)
+        {
+            var list = new List<Module>();
             foreach (var module in modules)
             {
-                if (typeof(T) == module.GetType() || module.GetType().IsSubclassOf(typeof(T)))
-                    list.Add((T)module);
+                if (moduleType == module.GetType() || module.GetType().IsSubclassOf(moduleType))
+                    list.Add(module);
             }
             return list;
         }
@@ -33,8 +37,14 @@ namespace FactoryCore.API
         {
             foreach (var module in modules)
             {
-                module.Template = this;
                 module.Init();
+            }
+        }
+        public void SetReferences()
+        {
+            foreach (var module in modules)
+            {
+                module.Template = this;
             }
         }
     }

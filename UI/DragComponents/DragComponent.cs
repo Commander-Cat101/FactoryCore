@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace FactoryCore.UI.Components
 {
-    [RegisterTypeInIl2Cpp]
+    [RegisterTypeInIl2Cpp(false)]
     public class DragComponent : MonoBehaviour
     {
         public DragComponent(IntPtr ptr) : base(ptr) { }

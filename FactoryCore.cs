@@ -23,4 +23,8 @@ public class FactoryCore : BloonsTD6Mod
             ModGameMenu.Open<EditorUI>();
         }
     }*/
+    public override void OnApplicationQuit()
+    {
+        EditorUI.Instance?.SaveTemplate();
+    }
 }

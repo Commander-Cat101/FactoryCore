@@ -15,7 +15,7 @@ using UnityEngine.UI;
 
 namespace FactoryCore.UI
 {
-    [RegisterTypeInIl2Cpp]
+    [RegisterTypeInIl2Cpp(false)]
     internal class ModuleLinkHolder : DragComponent
     {
         public bool isInput;

@@ -11,6 +11,6 @@ public static class ModHelperData
     public const string Description = "A library for creating user-made content.";
     public const string Author = "CommanderCat";
 
-    public const string RepoOwner = "Commander_Cat101";
+    public const string RepoOwner = "Commander-Cat101";
     public const string RepoName = "FactoryCore";
 }

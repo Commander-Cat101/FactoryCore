@@ -141,6 +141,14 @@ namespace FactoryCore.UI
             }
             LayoutRebuilder.ForceRebuildLayoutImmediate(panel);
             tab.ToggleTab();
+
+            ExtrasPanel.AddButton(new Info("HelpButton", -100, -100, 150, 150, Vector2.one), VanillaSprites.InfoBtn2, new Action(() =>
+            {
+                PopupScreen.instance.SafelyQueue(screen =>
+                {
+                    screen.ShowPopup(PopupScreen.Placement.menuCenter, "How to use", "Connect nodes to add features to your bloon\nDrag to move around modules\nRight-click input nodes to clear connections\nScroll to zoom in and out", null, "Ok", null, null, Popup.TransitionAnim.Scale);
+                });
+            }));
         }
         public ModHelperPanel CreateCategoryTab(Category category)
         {

@@ -4,6 +4,7 @@ using FactoryCore;
 using UnityEngine;
 using BTD_Mod_Helper.Api;
 using FactoryCore.UI;
+using BTD_Mod_Helper.Api.ModOptions;
 
 [assembly: MelonInfo(typeof(FactoryCore.FactoryCore), ModHelperData.Name, ModHelperData.Version, ModHelperData.RepoOwner)]
 [assembly: MelonGame("Ninja Kiwi", "BloonsTD6")]
@@ -16,13 +17,6 @@ public class FactoryCore : BloonsTD6Mod
     {
         ModHelper.Msg<FactoryCore>("FactoryCore loaded!");
     }
-    /*public override void OnUpdate()
-    {
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-            ModGameMenu.Open<EditorUI>();
-        }
-    }*/
     public override void OnApplicationQuit()
     {
         EditorUI.Instance?.SaveTemplate();

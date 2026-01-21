@@ -58,7 +58,7 @@ namespace FactoryCore.UI
             var image = obj.gameObject.AddComponent<Image>();
             tempLine = obj.GetComponent<RectTransform>();
             obj.transform.localScale = Vector3.one;
-            image.color = ValueColors.ColorByLinkType.ContainsKey(link.Type) ? ValueColors.ColorByLinkType[link.Type] : Color.white;
+            image.color = EditorUI.GetColorForNode(link.Type);
         }
         public void Update()
         {
@@ -97,7 +97,7 @@ namespace FactoryCore.UI
         }
         public void CreateConnection(ModuleInputHolder target)
         {
-            var obj = LineBetweenObjects.Create(ValueColors.ColorByLinkType.ContainsKey(link.Type) ? ValueColors.ColorByLinkType[link.Type] : Color.white, transform, target.transform, transform);
+            var obj = LineBetweenObjects.Create(EditorUI.GetColorForNode(link.Type), transform, target.transform, transform);
             linkConnections.Add(target, obj);
             target.LinkOutput(this, obj);
             if (!link.InputsGuids.Contains(target.link.Id))

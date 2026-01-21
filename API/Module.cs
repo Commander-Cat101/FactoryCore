@@ -206,7 +206,7 @@ namespace FactoryCore.API
         {
             var image = root.AddImage(new Info("Node", 0, 0, 100, 100), Assets.ConnectionNode);
             image.AddText(new Info("Text", -100, 0, 200, 40, new Vector2(0, 0.5f)), link.Name, 40, Il2CppTMPro.TextAlignmentOptions.MidlineRight).EnableAutoSizing();
-            image.Image.color = ValueColors.ColorByLinkType.ContainsKey(link.Type) ? ValueColors.ColorByLinkType[link.Type] : Color.white; ;
+            image.Image.color = EditorUI.GetColorForNode(link.Type); ;
             var moduleLink = image.AddComponent<ModuleInputHolder>();
             moduleLink.link = link;
             ModuleInputHolder.GuidToHolder.Add(link.Id, moduleLink);
@@ -215,7 +215,7 @@ namespace FactoryCore.API
         {
             var image = root.AddImage(new Info("Node", 0, 0, 100, 100), Assets.ConnectionNode);
             image.AddText(new Info("Text", 100, 0, 200, 40, new Vector2(1, 0.5f)), link.Name, 40, Il2CppTMPro.TextAlignmentOptions.MidlineLeft).EnableAutoSizing();
-            image.Image.color = ValueColors.ColorByLinkType.ContainsKey(link.Type) ? ValueColors.ColorByLinkType[link.Type] : Color.white;
+            image.Image.color = EditorUI.GetColorForNode(link.Type);
             var moduleLink = image.AddComponent<ModuleOutputHolder>();
             moduleLink.link = link;
             ModuleOutputHolder.GuidToHolder.Add(link.Id, moduleLink);

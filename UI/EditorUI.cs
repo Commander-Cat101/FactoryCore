@@ -4,6 +4,7 @@ using BTD_Mod_Helper.Api.Enums;
 using BTD_Mod_Helper.Extensions;
 using FactoryCore.API;
 using FactoryCore.UI.Components;
+using FactoryCore.UI.ContextMenus;
 using Il2CppAssets.Scripts.Unity.UI_New;
 using Il2CppAssets.Scripts.Unity.UI_New.Popups;
 using Il2CppAssets.Scripts.Unity.UI_New.Settings;
@@ -18,13 +19,17 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
+using TaskScheduler = BTD_Mod_Helper.Api.TaskScheduler;
 
 namespace FactoryCore.UI
 {
     public abstract class EditorUI : ModGameMenu<HotkeysScreen>
     {
         public static EditorUI Instance;
-        public abstract List<Category> Categories { get; }
+
+        public abstract Dictionary<Type, Color> NodeColors { get; }
+        public abstract ContextMenuInfo ContextMenu { get; }
         public abstract Type CenteredModule { get; }
 
         public DragComponent? DragObject;
@@ -36,10 +41,17 @@ namespace FactoryCore.UI
         public static ModHelperPanel ScalePanel;
         public ModHelperPanel ExtrasPanel;
 
+        internal ContextMenuPanel contextPanel;
+
+        Vector2 selectedContextPosition;
+
         public Canvas Canvas;
         public static Template Template;
 
         public GameObject? HoveredGameObject;
+
+        public float MagicalScalingNumber => Canvas.scaleFactor / 2;
+
         public override bool OnMenuOpened(Il2CppSystem.Object data)
         {
             Scaling = 1;
@@ -76,12 +88,14 @@ namespace FactoryCore.UI
         {
             if (Input.GetMouseButtonDown(0))
             {
+                CloseContextMenu(true);
                 IsDraggingBackground = HoveredGameObject == null;
                 DragObject = HoveredGameObject?.gameObject.GetComponentInParent<DragComponent>();
                 DragObject?.StartDrag();
             }
             if (Input.GetMouseButtonUp(0))
             {
+                CloseContextMenu(true);
                 IsDraggingBackground = false;
                 DragObject?.EndDrag();
                 DragObject = null;
@@ -94,6 +108,11 @@ namespace FactoryCore.UI
             DragObject?.UpdateDrag(Input.mousePosition - MouseLastPosition);
             MouseLastPosition = Input.mousePosition;
 
+            if (Input.GetMouseButtonDown(1) && !IsDraggingBackground && HoveredGameObject == null)
+            {
+                CreateContextMenu();
+            }
+
             var pointer = new PointerEventData(EventSystem.current)
             {
                 position = Input.mousePosition
@@ -105,7 +124,7 @@ namespace FactoryCore.UI
 
             if (Input.mouseScrollDelta.y != 0)
             {
-                
+                CloseContextMenu();
                 float prevScale = Scaling;
                 Scaling = Mathf.Clamp(Scaling + (Input.mouseScrollDelta.y / 10), 0.5f, 2.5f);
                 if (Scaling == prevScale)
@@ -120,28 +139,6 @@ namespace FactoryCore.UI
         {
             ExtrasPanel = GameMenu.gameObject.AddModHelperPanel(new Info("ExtrasPanel", InfoPreset.FillParent));
 
-            var panel = ExtrasPanel.AddPanel(new Info("Categories", 250, -500, 450, 1000, Vector2.zero), VanillaSprites.MainBGPanelBlue);
-            var tab = panel.AddComponent<CreateModuleMenu>();
-            tab.panel = panel;
-
-            var addbutton = panel.AddButton(new Info("AddComponentButton", 100, 150, 200, 200, new Vector2(0, 1)), VanillaSprites.AddMoreBtn, new Action(tab.ToggleTab));
-            addbutton.AddLayoutElement().ignoreLayout = true;
-
-            var layout = panel.AddComponent<VerticalLayoutGroup>();
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.childControlHeight = false;
-            layout.childControlWidth = false;
-            layout.padding = new RectOffset() { top = 50, bottom = 50 };
-            layout.spacing = 50;
-            panel.FitContent(ContentSizeFitter.FitMode.Unconstrained, ContentSizeFitter.FitMode.PreferredSize);
-
-            foreach (var category in Categories)
-            {
-                CreateCategoryTab(category).transform.SetParent(panel, false);
-            }
-            LayoutRebuilder.ForceRebuildLayoutImmediate(panel);
-            tab.ToggleTab();
-
             ExtrasPanel.AddButton(new Info("HelpButton", -100, -100, 150, 150, Vector2.one), VanillaSprites.InfoBtn2, new Action(() =>
             {
                 PopupScreen.instance.SafelyQueue(screen =>
@@ -150,16 +147,29 @@ namespace FactoryCore.UI
                 });
             }));
         }
-        public ModHelperPanel CreateCategoryTab(Category category)
+        public void CloseContextMenu(bool failIfHovering = false)
         {
-            var panel = ModHelperPanel.Create(new Info(category.Name, 550, 60));
-            panel.AddComponent<CategoryTab>().category = category;
-            panel.AddText(new Info("Text", 550, 60), category.Name + "  >", 40).EnableAutoSizing();
-            return panel;
+            if (failIfHovering && HoveredGameObject?.GetComponentInParent<ContextMenuEntryMonoBehavior>() != null)
+                return;
+            contextPanel?.DeleteObject();
+            contextPanel = null;
+        }
+        public void CreateContextMenu()
+        {
+            CloseContextMenu();
+
+            contextPanel = ExtrasPanel.AddModHelperComponent(ContextMenuPanel.CreateContextPanel(ContextMenu));
+            selectedContextPosition = Input.mousePosition;
+            contextPanel.transform.position = ClampPositionInsideCanvasSpace(selectedContextPosition, new Vector2(contextPanel.RectTransform.sizeDelta.x, ContextMenu.GetEstimatedHeight()));
+
+            TaskScheduler.ScheduleTask(() =>
+            {
+                contextPanel.transform.position = ClampPositionInsideCanvasSpace(selectedContextPosition, contextPanel.RectTransform.sizeDelta);
+            });
+
         }
         public ModHelperPanel CreateModuleUI(Module module)
         {
-
             var moduleRoot = MenuContent.AddPanel(new Info("ModuleRoot", 0, 0, 0, 0));
             moduleRoot.transform.localPosition = new Vector3(module.XPosition, module.YPosition, 0);
             moduleRoot.AddComponent<VerticalLayoutGroup>();
@@ -196,7 +206,7 @@ namespace FactoryCore.UI
             module.Template = Template;
             Template.AddModule(module);
             module.Init();
-            Vector2 pos = new Vector2(GameMenu.transform.position.x - (500 * Canvas.scaleFactor * Scaling), GameMenu.transform.position.y);
+            Vector2 pos = selectedContextPosition;
             CreateModuleUI(module).transform.position = pos;
         }
         public void LoadTemplateUI()
@@ -231,5 +241,33 @@ namespace FactoryCore.UI
             MelonLogger.Msg($"Loaded modules in {generateTimes.Average()}ms per module");
         }
         public abstract void SaveTemplate();
+
+        public static Color GetColorForNode(Type nodeType)
+        {
+            if (Instance.NodeColors.TryGetValue(nodeType, out var color))
+            {
+                return color;
+            }
+            return Color.white;
+        }
+
+        public static Vector2 ClampPositionInsideCanvasSpace(Vector2 position, Vector2 sizeDelta)
+        {
+            //1350 286 561
+            //690
+
+            float magicNumber = (EditorUI.Instance.Canvas.scaleFactor / 2f);
+
+            float min = sizeDelta.y * EditorUI.Instance.Canvas.scaleFactor;
+
+            MelonLogger.Msg($"{sizeDelta.y} * ${EditorUI.Instance.Canvas.scaleFactor} = ${min}");
+
+            float max = EditorUI.Instance.Canvas.GetComponent<RectTransform>().rect.height - sizeDelta.y * magicNumber;
+            float y = Mathf.Clamp(position.y, min, max);
+
+            MelonLogger.Msg($"Clamping Y Pos: {position.y} to Min: {min} Max: {max} Result: {y}");
+
+            return new Vector2(position.x, y);
+        }
     }
 }

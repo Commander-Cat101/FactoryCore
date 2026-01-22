@@ -1,17 +1,5 @@
-﻿using BTD_Mod_Helper.Api;
-using BTD_Mod_Helper.Api.Components;
-using BTD_Mod_Helper.Api.Enums;
-using FactoryCore.API.ModuleValues;
-using Harmony;
-using MelonLoader;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using FactoryCore.API.ModuleValues;
 using System.Text.Json.Serialization;
-using UnityEngine;
-using UnityEngine.UI;
 using JsonIgnoreAttribute = Newtonsoft.Json.JsonIgnoreAttribute;
 
 namespace FactoryCore.API

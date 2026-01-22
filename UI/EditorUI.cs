@@ -1,28 +1,4 @@
-﻿using BTD_Mod_Helper.Api;
-using BTD_Mod_Helper.Api.Components;
-using BTD_Mod_Helper.Api.Enums;
-using BTD_Mod_Helper.Extensions;
-using FactoryCore.API;
-using FactoryCore.UI.Components;
-using FactoryCore.UI.ContextMenus;
-using Il2CppAssets.Scripts.Unity.UI_New;
-using Il2CppAssets.Scripts.Unity.UI_New.Popups;
-using Il2CppAssets.Scripts.Unity.UI_New.Settings;
-using Il2CppNinjaKiwi.Common;
-using MelonLoader;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
-using TaskScheduler = BTD_Mod_Helper.Api.TaskScheduler;
-
-namespace FactoryCore.UI
+﻿namespace FactoryCore.UI
 {
     public abstract class EditorUI : ModGameMenu<HotkeysScreen>
     {
@@ -253,19 +229,12 @@ namespace FactoryCore.UI
 
         public static Vector2 ClampPositionInsideCanvasSpace(Vector2 position, Vector2 sizeDelta)
         {
-            //1350 286 561
-            //690
-
             float magicNumber = (EditorUI.Instance.Canvas.scaleFactor / 2f);
 
             float min = sizeDelta.y * EditorUI.Instance.Canvas.scaleFactor;
 
-            MelonLogger.Msg($"{sizeDelta.y} * ${EditorUI.Instance.Canvas.scaleFactor} = ${min}");
-
             float max = EditorUI.Instance.Canvas.GetComponent<RectTransform>().rect.height - sizeDelta.y * magicNumber;
             float y = Mathf.Clamp(position.y, min, max);
-
-            MelonLogger.Msg($"Clamping Y Pos: {position.y} to Min: {min} Max: {max} Result: {y}");
 
             return new Vector2(position.x, y);
         }

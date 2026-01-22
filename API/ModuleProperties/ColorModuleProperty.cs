@@ -1,8 +1,4 @@
-﻿using BTD_Mod_Helper.Api.Components;
-using FactoryCore.API.ModuleValues;
-using Newtonsoft.Json;
-using System;
-using UnityEngine;
+﻿using FactoryCore.API.ModuleValues;
 
 namespace FactoryCore.API.ModuleProperties
 {

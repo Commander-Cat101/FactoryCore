@@ -1,15 +1,4 @@
-﻿using BTD_Mod_Helper.Api.Components;
-using BTD_Mod_Helper.Extensions;
-using FactoryCore.API;
-using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-
-namespace FactoryCore.UI
+﻿namespace FactoryCore.UI
 {
     [RegisterTypeInIl2Cpp(false)]
     public class ModuleHolder : MonoBehaviour

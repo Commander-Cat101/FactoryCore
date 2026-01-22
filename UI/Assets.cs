@@ -1,7 +1,4 @@
-﻿global using FactoryCore.UI;
-using BTD_Mod_Helper.Api;
-using UnityEngine;
-namespace FactoryCore.UI
+﻿namespace FactoryCore.UI
 {
     internal static class Assets
     {

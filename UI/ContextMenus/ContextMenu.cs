@@ -1,17 +1,4 @@
-﻿using BTD_Mod_Helper.Api.Components;
-using BTD_Mod_Helper.Api.Enums;
-using Il2CppAssets.Scripts.Unity.Menu;
-using Il2CppTMPro;
-using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.UI;
-
-namespace FactoryCore.UI.ContextMenus
+﻿namespace FactoryCore.UI.ContextMenus
 {
     [RegisterTypeInIl2Cpp(false)]
     internal class ContextMenuPanel : ModHelperPanel

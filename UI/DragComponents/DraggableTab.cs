@@ -1,12 +1,4 @@
-﻿using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-
-namespace FactoryCore.UI.Components
+﻿namespace FactoryCore.UI.Components
 {
     [RegisterTypeInIl2Cpp(false)]
     public class DraggableTab : DragComponent

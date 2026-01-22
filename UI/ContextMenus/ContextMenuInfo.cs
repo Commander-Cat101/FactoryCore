@@ -1,14 +1,4 @@
-﻿using BTD_Mod_Helper.Api;
-using BTD_Mod_Helper.Api.Components;
-using BTD_Mod_Helper.Api.Enums;
-using FactoryCore.API;
-using MelonLoader;
-using System;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
-
-namespace FactoryCore.UI.ContextMenus
+﻿namespace FactoryCore.UI.ContextMenus
 {
     public struct ContextMenuInfo
     {

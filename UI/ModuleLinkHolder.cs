@@ -1,19 +1,4 @@
-﻿    using BTD_Mod_Helper.Extensions;
-using FactoryCore.API;
-using FactoryCore.UI.Components;
-using Il2CppAssets.Scripts.Unity.UI_New;
-using Il2CppSystem.Security.Cryptography;
-using MelonLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
-
-namespace FactoryCore.UI
+﻿namespace FactoryCore.UI
 {
     [RegisterTypeInIl2Cpp(false)]
     internal class ModuleLinkHolder : DragComponent

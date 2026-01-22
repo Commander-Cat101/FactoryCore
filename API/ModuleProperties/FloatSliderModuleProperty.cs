@@ -1,13 +1,4 @@
-﻿using BTD_Mod_Helper.Api.Components;
-using BTD_Mod_Helper.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-
-namespace FactoryCore.API.ModuleValues
+﻿namespace FactoryCore.API.ModuleValues
 {
     public class FloatSliderModuleProperty : FloatModuleProperty
     {

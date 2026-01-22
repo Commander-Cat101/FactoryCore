@@ -1,14 +1,4 @@
-﻿using BTD_Mod_Helper.Api.Components;
-using BTD_Mod_Helper.Api.Enums;
-using BTD_Mod_Helper.Extensions;
-using FactoryCore.API.ModuleValues;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using static Il2CppSystem.Linq.Expressions.Interpreter.CastInstruction.CastInstructionNoT;
+﻿using FactoryCore.API.ModuleValues;
 
 namespace FactoryCore.API.ModuleProperties
 {

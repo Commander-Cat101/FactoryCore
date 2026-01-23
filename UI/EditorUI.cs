@@ -84,9 +84,21 @@
             DragObject?.UpdateDrag(Input.mousePosition - MouseLastPosition);
             MouseLastPosition = Input.mousePosition;
 
-            if (Input.GetMouseButtonDown(1) && !IsDraggingBackground && HoveredGameObject == null)
+            if (Input.GetMouseButtonDown(1) && !IsDraggingBackground)
             {
-                CreateContextMenu();
+                if (HoveredGameObject == null)
+                    CreateContextMenu(ContextMenu);
+                var tab = HoveredGameObject?.gameObject.GetComponentInParent<DraggableTab>();
+                if (tab != null)
+                {
+                    ContextMenuInfo contextMenuInfo = ContextMenuBuilder.Create(500)
+                        .WithButton("Duplicate", () =>
+                        {
+                            CreateModule(tab.transform.parent.GetComponentInChildren<ModuleHolder>().Module.GetType(), tab.transform.parent.transform.position + new Vector3(100, -100));
+                        });
+                    CreateContextMenu(contextMenuInfo);
+                }
+                    
             }
 
             var pointer = new PointerEventData(EventSystem.current)
@@ -130,11 +142,11 @@
             contextPanel?.DeleteObject();
             contextPanel = null;
         }
-        public void CreateContextMenu()
+        public void CreateContextMenu(ContextMenuInfo info)
         {
             CloseContextMenu();
 
-            contextPanel = ExtrasPanel.AddModHelperComponent(ContextMenuPanel.CreateContextPanel(ContextMenu));
+            contextPanel = ExtrasPanel.AddModHelperComponent(ContextMenuPanel.CreateContextPanel(info));
             selectedContextPosition = Input.mousePosition;
             contextPanel.transform.position = ClampPositionInsideCanvasSpace(selectedContextPosition, new Vector2(contextPanel.RectTransform.sizeDelta.x, ContextMenu.GetEstimatedHeight()));
 
@@ -178,12 +190,15 @@
         }
         public void CreateModule(Type moduleType)
         {
+            CreateModule(moduleType, selectedContextPosition);
+        }
+        public void CreateModule(Type moduleType, Vector2 position)
+        {
             Module module = (Module)Activator.CreateInstance(moduleType);
             module.Template = Template;
             Template.AddModule(module);
             module.Init();
-            Vector2 pos = selectedContextPosition;
-            CreateModuleUI(module).transform.position = pos;
+            CreateModuleUI(module).transform.position = position;
         }
         public void LoadTemplateUI()
         {

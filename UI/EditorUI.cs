@@ -131,7 +131,7 @@
             {
                 PopupScreen.instance.SafelyQueue(screen =>
                 {
-                    screen.ShowPopup(PopupScreen.Placement.menuCenter, "How to use", "Connect nodes to add features to your bloon\nDrag to move around modules\nRight-click input nodes to clear connections\nScroll to zoom in and out", null, "Ok", null, null, Popup.TransitionAnim.Scale);
+                    screen.ShowPopup(PopupScreen.Placement.menuCenter, "How to use", "Right-click to add modules\nConnect nodes to add features to your bloon\nRight-click input nodes to clear connections", null, "Ok", null, null, Popup.TransitionAnim.Scale);
                 });
             }));
         }

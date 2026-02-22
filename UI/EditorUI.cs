@@ -89,7 +89,7 @@
                 if (HoveredGameObject == null)
                     CreateContextMenu(ContextMenu);
                 var tab = HoveredGameObject?.gameObject.GetComponentInParent<DraggableTab>();
-                if (tab != null)
+                if (tab != null && tab.transform.parent.GetComponentInChildren<ModuleHolder>().Module.IsDuplicable)
                 {
                     ContextMenuInfo contextMenuInfo = ContextMenuBuilder.Create(500)
                         .WithButton("Duplicate", () =>

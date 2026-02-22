@@ -131,11 +131,6 @@
         }
         public void Update()
         {
-            if (nestedMenu != null)
-            {
-                
-            }
-
             var hover = EditorUI.Instance.HoveredGameObject;
             if (hover?.GetComponent<ContextMenuEntryMonoBehavior>() == this || hover?.GetComponent<ModHelperText>() == text)
             {

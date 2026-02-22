@@ -8,6 +8,9 @@ namespace FactoryCore.API
     {
         [JsonIgnore]
         public virtual bool IsRemovable { get; } = true;
+
+        [JsonIgnore]
+        public virtual bool IsDuplicable { get; } = true;
         [JsonIgnore]
         public abstract string Name { get; }
 

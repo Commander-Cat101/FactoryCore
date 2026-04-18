@@ -14,10 +14,10 @@
     </ItemGroup>
     <ItemGroup>
       <Reference Include="UnityEngine.InputForUIModule">
-        <HintPath>E:\SteamLibrary\steamapps\common\Mage Arena\MageArena_Data\Managed\UnityEngine.InputForUIModule.dll</HintPath>
+        <HintPath>$(Il2CppAssemblies)\UnityEngine.InputForUIModule.dll</HintPath>
       </Reference>
       <Reference Include="UnityEngine.InputModule">
-        <HintPath>E:\SteamLibrary\steamapps\common\Mage Arena\MageArena_Data\Managed\UnityEngine.InputModule.dll</HintPath>
+        <HintPath>$(Il2CppAssemblies)\UnityEngine.InputModule.dll</HintPath>
       </Reference>
     </ItemGroup>
 

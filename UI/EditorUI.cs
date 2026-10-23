@@ -1,4 +1,6 @@
-﻿namespace FactoryCore.UI
+﻿using Debug = UnityEngine.Debug;
+
+namespace FactoryCore.UI
 {
     public abstract class EditorUI : ModGameMenu<HotkeysScreen>
     {
@@ -25,8 +27,12 @@
         public static Template Template;
 
         public GameObject? HoveredGameObject;
-
+        public bool ShouldNestedContextMenusGoLeft = false;
+        
+        
         public float MagicalScalingNumber => Canvas.scaleFactor / 2;
+
+        public abstract void SaveTemplate();
 
         public override bool OnMenuOpened(Il2CppSystem.Object data)
         {
@@ -77,6 +83,8 @@
                 DragObject = null;
             }
 
+            HoveredGameObject = PollForHoveredObjects();
+
             if (IsDraggingBackground)
             {
                 MenuContent.gameObject.transform.position += Input.mousePosition - MouseLastPosition;
@@ -89,6 +97,7 @@
                 if (HoveredGameObject == null)
                     CreateContextMenu(ContextMenu);
                 var tab = HoveredGameObject?.gameObject.GetComponentInParent<DraggableTab>();
+                
                 if (tab != null && tab.transform.parent.GetComponentInChildren<ModuleHolder>().Module.IsDuplicable)
                 {
                     ContextMenuInfo contextMenuInfo = ContextMenuBuilder.Create(500)
@@ -97,29 +106,13 @@
                             CreateModule(tab.transform.parent.GetComponentInChildren<ModuleHolder>().Module.GetType(), tab.transform.parent.transform.position + new Vector3(100, -100));
                         });
                     CreateContextMenu(contextMenuInfo);
-                }
-                    
+                }  
             }
-
-            var pointer = new PointerEventData(EventSystem.current)
-            {
-                position = Input.mousePosition
-            };
-            Il2CppSystem.Collections.Generic.List<RaycastResult> raycastResultsIL2CPP = new Il2CppSystem.Collections.Generic.List<RaycastResult>();
-            EventSystem.current.RaycastAll(pointer, raycastResultsIL2CPP);
-            List<RaycastResult> raycastResults = raycastResultsIL2CPP.ToList().Where(a => a.gameObject.GetComponentInParent<CommonBackgroundScreen>() == null).ToList();
-            HoveredGameObject = raycastResults.FirstOrDefault()?.gameObject;
-
+            
             if (Input.mouseScrollDelta.y != 0)
             {
                 CloseContextMenu();
-                float prevScale = Scaling;
                 Scaling = Mathf.Clamp(Scaling + (Input.mouseScrollDelta.y / 10), 0.5f, 2.5f);
-                if (Scaling == prevScale)
-                    return;
-                float scaleDiff = Scaling - prevScale;
-                var mousePos = Input.mousePosition;
-
                 ScalePanel.transform.localScale = Vector3.one * Scaling;
             }
         }
@@ -139,6 +132,7 @@
         {
             if (failIfHovering && HoveredGameObject?.GetComponentInParent<ContextMenuEntryMonoBehavior>() != null)
                 return;
+            
             contextPanel?.DeleteObject();
             contextPanel = null;
         }
@@ -148,10 +142,17 @@
 
             contextPanel = ExtrasPanel.AddModHelperComponent(ContextMenuPanel.CreateContextPanel(info));
             selectedContextPosition = Input.mousePosition;
+            
             contextPanel.transform.position = ClampPositionInsideCanvasSpace(selectedContextPosition, new Vector2(contextPanel.RectTransform.sizeDelta.x, ContextMenu.GetEstimatedHeight()));
-
+            
             TaskScheduler.ScheduleTask(() =>
             {
+                ShouldNestedContextMenusGoLeft =
+                    Canvas.GetComponent<RectTransform>().rect.width / 2 * Canvas.scaleFactor  <
+                    selectedContextPosition.x;
+                
+                MelonLogger.Msg(ShouldNestedContextMenusGoLeft);
+                
                 contextPanel.transform.position = ClampPositionInsideCanvasSpace(selectedContextPosition, contextPanel.RectTransform.sizeDelta);
             });
 
@@ -231,8 +232,18 @@
             }
             MelonLogger.Msg($"Loaded modules in {generateTimes.Average()}ms per module");
         }
-        public abstract void SaveTemplate();
 
+        public static GameObject? PollForHoveredObjects()
+        {
+            var pointer = new PointerEventData(EventSystem.current)
+            {
+                position = Input.mousePosition
+            };
+            Il2CppSystem.Collections.Generic.List<RaycastResult> raycastResultsIL2CPP = new Il2CppSystem.Collections.Generic.List<RaycastResult>();
+            EventSystem.current.RaycastAll(pointer, raycastResultsIL2CPP);
+            List<RaycastResult> raycastResults = raycastResultsIL2CPP.ToList().Where(a => a.gameObject.GetComponentInParent<CommonBackgroundScreen>() == null).ToList();
+            return raycastResults.FirstOrDefault()?.gameObject;
+        }
         public static Color GetColorForNode(Type nodeType)
         {
             if (Instance.NodeColors.TryGetValue(nodeType, out var color))
@@ -244,14 +255,13 @@
 
         public static Vector2 ClampPositionInsideCanvasSpace(Vector2 position, Vector2 sizeDelta)
         {
-            float magicNumber = (EditorUI.Instance.Canvas.scaleFactor / 2f);
-
-            float min = sizeDelta.y * EditorUI.Instance.Canvas.scaleFactor;
-
-            float max = EditorUI.Instance.Canvas.GetComponent<RectTransform>().rect.height - sizeDelta.y * magicNumber;
-            float y = Mathf.Clamp(position.y, min, max);
-
-            return new Vector2(position.x, y);
+            var canvas = Instance.Canvas;
+            var canvasRect = canvas.GetComponent<RectTransform>().rect;
+            
+            float y = Mathf.Clamp(position.y, sizeDelta.y * canvas.scaleFactor, canvasRect.height - (sizeDelta.y / 2) * canvas.scaleFactor);
+            float x = Math.Min(position.x, (canvasRect.width - sizeDelta.x) * canvas.scaleFactor);
+            
+            return new Vector2(x, y);
         }
     }
 }

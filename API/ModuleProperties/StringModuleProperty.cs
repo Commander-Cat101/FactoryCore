@@ -12,17 +12,6 @@ namespace FactoryCore.API.ModuleValues
             MaxLength = maxLength;
             Name = name;
         }
-        public override ModHelperPanel GetVisual(ModHelperPanel root)
-        {
-            var panel = root.AddPanel(new Info("StringModuleValue", 0, 0, 1000, 100));
-            panel.AddText(new Info("Text", -200, 0, 500, 50), $"{Name}", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
-            panel.AddInputField(new Info("Input", 250, 0, 400, 50), Module.GetValue<string>(Name).ToString(), VanillaSprites.BlueInsertPanel, new Action<string>((value) =>
-            {
-                Module.SetValue(value, Name);
-            }), 30).InputField.characterLimit = MaxLength;
-            return panel;
-        }
-
         public override ModHelperPanel CreateTemplate()
         {
             var panel = ModHelperPanel.Create(new Info("StringModuleValue", 0, 0, 1000, 100));

@@ -34,7 +34,7 @@
                 if (i == info.Entries.Count - 1)
                     continue;
                 var bottomLine = panel.AddImage(new Info("BottomLine", 0, 0, info.Width - 100, 10, new UnityEngine.Vector2(0.5f, 0)), VanillaSprites.WhiteSquareGradient);
-                bottomLine.Image.color = new UnityEngine.Color(0, 0, 0, 0.5f);
+                bottomLine.Image.color = new Color(0, 0, 0, 0.5f);
             }
 
             LayoutRebuilder.ForceRebuildLayoutImmediate(panel);

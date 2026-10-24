@@ -1,6 +1,4 @@
-﻿using Debug = UnityEngine.Debug;
-
-namespace FactoryCore.UI;
+﻿namespace FactoryCore.UI;
 
 [RegisterTypeInIl2Cpp(false)]
 public class ModuleRootMonoBehavior : MonoBehaviour
@@ -16,7 +14,7 @@ public class ModuleRootMonoBehavior : MonoBehaviour
     private Stack<ModuleOutputHolder> outputHolders;
     private Stack<ModuleInputHolder> inputHolders;
     
-    private static Dictionary<Type, ModHelperPanel> propertyTemplates = new Dictionary<Type, ModHelperPanel>();
+    private static Dictionary<Type, ModHelperPanel> propertyTemplates = new();
     
     public void Update()
     {

@@ -1,6 +1,4 @@
-﻿
-
-namespace FactoryCore.UI
+﻿namespace FactoryCore.UI
 {
     public abstract class EditorUI : ModGameMenu<HotkeysScreen>
     {

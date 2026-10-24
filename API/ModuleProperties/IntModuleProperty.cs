@@ -13,31 +13,6 @@
             MaxValue = maxValue;
             Name = name;
         }
-        public override ModHelperPanel GetVisual(ModHelperPanel root)
-        {
-            var panel = root.AddPanel(new Info("IntModuleValue", 0, 0, 1000, 100));
-            panel.AddText(new Info("Text", -200, 0, 500, 50), $"{Name}", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
-            ModHelperInputField field = null;
-            field = panel.AddInputField(new Info("Input", 250, 0, 400, 50), Module.GetValue<int>(Name).ToString(), VanillaSprites.BlueInsertPanel, new Action<string>((value) =>
-            {
-                
-            }), 30, Il2CppTMPro.TMP_InputField.CharacterValidation.Integer);
-
-            field.InputField.onEndEdit.AddListener(new Action<string>((value) =>
-            {
-                if (int.TryParse(value, out int result))
-                {
-                    result = Math.Clamp(result, MinValue, MaxValue);
-                    field?.SetText(result.ToString(), false);
-                    Module.SetValue(result, Name);
-                }
-            }));
-
-            field.InputField.characterLimit = 9;
-
-            return panel;
-        }
-
         public override ModHelperPanel CreateTemplate()
         {
             var panel = ModHelperPanel.Create(new Info("IntModuleValue", 0, 0, 1000, 100));

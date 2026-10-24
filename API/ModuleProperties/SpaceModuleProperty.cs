@@ -8,12 +8,6 @@
         {
             this.Height = Height;
         }
-
-        public override ModHelperPanel GetVisual(ModHelperPanel root)
-        {
-            return root.AddPanel(new Info("Space", 0, 0, 1000, Height));
-        }
-
         public override ModHelperPanel CreateTemplate()
         {
             return ModHelperPanel.Create(new Info("Space", 0, 0, 1000, Height));

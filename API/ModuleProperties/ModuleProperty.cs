@@ -6,6 +6,11 @@
         public string Name { get; set; }
 
         public abstract ModHelperPanel GetVisual(ModHelperPanel root);
+
+        public abstract ModHelperPanel CreateTemplate();
+
+        public abstract void SetupProperty(ModHelperPanel root);
+        
         public abstract void LoadData();
     }
 }

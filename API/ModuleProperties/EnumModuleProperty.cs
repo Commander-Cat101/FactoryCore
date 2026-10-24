@@ -42,6 +42,42 @@ namespace FactoryCore.API.ModuleProperties
 
             return panel;
         }
+
+        public override ModHelperPanel CreateTemplate()
+        {
+            var panel = ModHelperPanel.Create(new Info("EnumModuleProperty", 0, 0, 1000, 100));
+
+            panel.AddText(new Info("Text", -250, 0, 400, 100), $"Property Name", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
+
+            var text = panel.AddText(new Info("Type", 200, 0, 300, 50), "Option 1");
+            text.Text.overflowMode = Il2CppTMPro.TextOverflowModes.Overflow;
+
+            var left = panel.AddButton(new Info("Left", 0, 0, 75, 75), VanillaSprites.Arrow, null);
+            left.transform.rotation = Quaternion.Euler(0, 0, 180);
+
+            panel.AddButton(new Info("Right", 400, 0, 75, 75), VanillaSprites.Arrow, null).transform.rotation.SetEulerAngles(0, 0, -90);
+            
+            return panel;
+        }
+
+        public override void SetupProperty(ModHelperPanel root)
+        {
+            root.transform.Find("Text").GetComponent<ModHelperText>().SetText(Name);
+            var text = root.transform.Find("Type").GetComponent<ModHelperText>();
+            text.SetText(Options[DefaultValue]);
+            
+            root.transform.Find("Left").GetComponent<ModHelperButton>().Button.SetOnClick(() =>
+            {
+                ChangeValue(-1);
+                SetText(text);
+            });
+            root.transform.Find("Right").GetComponent<ModHelperButton>().Button.SetOnClick(() =>
+            {
+                ChangeValue(1);
+                SetText(text);
+            });
+        }
+
         internal void SetText(ModHelperText text)
         {
             text.SetText(Options[Module.GetValue<int>(Name)]);

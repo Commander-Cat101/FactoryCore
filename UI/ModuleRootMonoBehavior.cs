@@ -1,4 +1,6 @@
-﻿namespace FactoryCore.UI;
+﻿using Debug = UnityEngine.Debug;
+
+namespace FactoryCore.UI;
 
 [RegisterTypeInIl2Cpp(false)]
 public class ModuleRootMonoBehavior : MonoBehaviour
@@ -13,6 +15,9 @@ public class ModuleRootMonoBehavior : MonoBehaviour
 
     private Stack<ModuleOutputHolder> outputHolders;
     private Stack<ModuleInputHolder> inputHolders;
+    
+    private static Dictionary<Type, ModHelperPanel> propertyTemplates = new Dictionary<Type, ModHelperPanel>();
+    
     public void Update()
     {
         module?.Position = transform.localPosition;
@@ -37,10 +42,18 @@ public class ModuleRootMonoBehavior : MonoBehaviour
 
         foreach (var value in module.Properties)
         {
-            value.GetVisual(contentPanel);
+            if (!propertyTemplates.TryGetValue(value.GetType(), out ModHelperPanel template) || template == null)
+            {
+                template = propertyTemplates[value.GetType()] = value.CreateTemplate();
+                DontDestroyOnLoad(template.gameObject);
+            }
+            var property = Instantiate(template);
+            value.SetupProperty(property);
+            property.SetInfo(template.initialInfo);
+            contentPanel.Add(property);
         }
-
         LayoutRebuilder.ForceRebuildLayoutImmediate(contentPanel.RectTransform);
+        //LayoutRebuilder.ForceRebuildLayoutImmediate(contentPanel.RectTransform);
 
         outputHolders = new Stack<ModuleOutputHolder>();
         inputHolders = new  Stack<ModuleInputHolder>();
@@ -152,7 +165,9 @@ public class ModuleRootMonoBehavior : MonoBehaviour
         moduleRoot.propertiesContainer.FitContent(ContentSizeFitter.FitMode.Unconstrained, ContentSizeFitter.FitMode.PreferredSize);
         
         moduleRoot.contentPanel = moduleRoot.propertiesContainer.AddPanel(new Info("Content", 0, 0, 650, 800, new Vector2(0.5f, 0.5f)));
-        moduleRoot.contentPanel.AddComponent<VerticalLayoutGroup>().padding = new RectOffset() { top = 35, bottom = 35 };
+        var vertLayout = moduleRoot.contentPanel.AddComponent<VerticalLayoutGroup>(); 
+        vertLayout.childForceExpandHeight = vertLayout.childForceExpandWidth = false;
+        vertLayout.padding = new RectOffset(){ top = 35, bottom = 35};
         moduleRoot.contentPanel.FitContent(ContentSizeFitter.FitMode.Unconstrained, ContentSizeFitter.FitMode.PreferredSize);
         
         var dragBar = panel.AddPanel(new Info("DragBar", 0, 0, 1000, 150, new Vector2(0.5f, 0.5f)), VanillaSprites.MainBGPanelBlue);

@@ -24,6 +24,27 @@ namespace FactoryCore.API.ModuleProperties
             button.Image.SetSprite(value ? Assets.OnBtn : Assets.OffBtn);
             return panel;
         }
+
+        public override ModHelperPanel CreateTemplate()
+        {
+            var panel = ModHelperPanel.Create(new Info("BoolModuleValue", 0, 0, 1000, 100));
+            panel.AddText(new Info("Text", -200, 0, 500, 50), $"Property Name", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
+            var button = panel.AddButton(new Info("Toggle", -150, 0, 100, 100, new Vector2(1, 0.5f)), "",null);
+            button.Image.SetSprite(Assets.OffBtn);
+            return panel;
+        }
+
+        public override void SetupProperty(ModHelperPanel root)
+        {
+            root.transform.Find("Text").GetComponent<Text>().text = Name;
+            var button = root.transform.Find("Toggle").GetComponent<ModHelperButton>();
+            button.Button.SetOnClick(() =>
+            {
+                OnClick(button);
+            });
+            button.Image.SetSprite(Module.GetValue<bool>(Name) ? Assets.OnBtn : Assets.OffBtn);
+        }
+
         public override void LoadData()
         {
             if (!Module.HasValue(Name))

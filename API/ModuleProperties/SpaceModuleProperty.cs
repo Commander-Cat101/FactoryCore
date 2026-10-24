@@ -14,6 +14,16 @@
             return root.AddPanel(new Info("Space", 0, 0, 1000, Height));
         }
 
+        public override ModHelperPanel CreateTemplate()
+        {
+            return ModHelperPanel.Create(new Info("Space", 0, 0, 1000, Height));
+        }
+
+        public override void SetupProperty(ModHelperPanel root)
+        {
+            root.RectTransform.sizeDelta = new Vector2(1000, Height);
+        }
+
         public override void LoadData()
         { 
 

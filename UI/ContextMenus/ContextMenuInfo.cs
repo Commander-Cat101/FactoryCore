@@ -93,7 +93,7 @@ public struct ContextMenuInfo
         public static ContextMenuInfo WithButton(this ContextMenuInfo info, Type moduleType)
         {
             var module = (Module)Activator.CreateInstance(moduleType);
-            info.Entries.Add(new ContextMenuButton(module.Name, () => { EditorUI.Instance.CreateModule(moduleType); }));
+            info.Entries.Add(new ContextMenuButton(module.Name, () => { EditorUI.Instance.CreateNewModule(moduleType); }));
             return info;
         }
         public static ContextMenuInfo WithNested(this ContextMenuInfo info, string name, int nestedMenuWidth, Action<ContextMenuInfo> nestedMenu)

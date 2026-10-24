@@ -35,8 +35,6 @@ namespace FactoryCore.UI
             Vector3 dif = obj1.position - obj2.position;
             transform.right = dif.normalized;
             GetComponent<RectTransform>().sizeDelta = new Vector3(dif.magnitude / canvas.scaleFactor / EditorUI.Scaling, 25);
-
-            //GetComponent<RectTransform>().rotation = Quaternion.Euler(new Vector3(0, 0, 180 * Mathf.Atan(dif.y / dif.x) / Mathf.PI));
         }
     }
 }

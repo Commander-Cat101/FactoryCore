@@ -44,8 +44,7 @@ namespace FactoryCore.API
         [JsonIgnore]
         public Vector2 Position { get => new Vector2(XPosition, YPosition); set { XPosition = value.x; YPosition = value.y; } }
 
-        [JsonIgnore]
-        List<ModuleProperty> Properties = new List<ModuleProperty>();
+        [JsonIgnore] internal List<ModuleProperty> Properties = new List<ModuleProperty>();
         protected void AddInput<T>(string name)
         {
             if (Inputs.Any(a => a.Name == name))
@@ -137,85 +136,19 @@ namespace FactoryCore.API
         {
 
         }
-        public virtual void ProcessModule()
+
+        public abstract void ProcessModule();
+        
+        public virtual void SetupVisual(ModHelperPanel panel)
         {
-
-        }
-        public virtual void SetupVisual(ModHelperPanel panel, ModuleHolder holder)
-        {
-            var content = panel.AddPanel(new Info("Content", 0, 0, 650, 800, new Vector2(0.5f, 0.5f)));
-            content.AddComponent<VerticalLayoutGroup>().padding = new RectOffset() { top = 35, bottom = 35 };
-            ContentSizeFitter fitter = content.FitContent(ContentSizeFitter.FitMode.Unconstrained, ContentSizeFitter.FitMode.PreferredSize);
-
-            foreach (var value in Properties)
-            {
-                value.GetVisual(content);
-            }
-
-            LayoutRebuilder.ForceRebuildLayoutImmediate(content.RectTransform);
-
-            AddOutputVisuals(content, new Vector2(1, 0.5f), Outputs);
-            AddInputVisuals(content, new Vector2(0, 0.5f), Inputs);
-
-        }
-
-        protected void AddOutputVisuals(ModHelperPanel content, Vector2 anchor, List<ModuleOutput> links)
-        {
-            var nodes = content.AddPanel(new Info("Nodes", 0, 0, 100, content.RectTransform.sizeDelta.y, anchor));
-
-            nodes.RectTransform.sizeDelta = new Vector2(100, content.RectTransform.sizeDelta.y);
-            nodes.LayoutElement.ignoreLayout = true;
-            var layout = nodes.AddComponent<VerticalLayoutGroup>();
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.spacing = 50;
-            layout.childControlHeight = false;
-            layout.childControlWidth = false;
-
-            foreach (var link in links)
-            {
-                CreateNodeImage(nodes, link);
-            }
-        }
-        protected void AddInputVisuals(ModHelperPanel content, Vector2 anchor, List<ModuleInput> links)
-        {
-            var nodes = content.AddPanel(new Info("Nodes", 0, 0, 100, content.RectTransform.sizeDelta.y, anchor));
-
-            nodes.RectTransform.sizeDelta = new Vector2(100, content.RectTransform.sizeDelta.y);
-            nodes.LayoutElement.ignoreLayout = true;
-            var layout = nodes.AddComponent<VerticalLayoutGroup>();
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.spacing = 50;
-            layout.childControlHeight = false;
-            layout.childControlWidth = false;
-
-            foreach (var link in links)
-            {
-                CreateNodeImage(nodes, link);
-            }
-        }
-        public void CreateNodeImage(ModHelperPanel root, ModuleInput link)
-        {
-            var image = root.AddImage(new Info("Node", 0, 0, 100, 100), Assets.ConnectionNode);
-            image.AddText(new Info("Text", -100, 0, 200, 40, new Vector2(0, 0.5f)), link.Name, 40, Il2CppTMPro.TextAlignmentOptions.MidlineRight).EnableAutoSizing();
-            image.Image.color = EditorUI.GetColorForNode(link.Type); ;
-            var moduleLink = image.AddComponent<ModuleInputHolder>();
-            moduleLink.link = link;
-            ModuleInputHolder.GuidToHolder.Add(link.Id, moduleLink);
-        }
-        public void CreateNodeImage(ModHelperPanel root, ModuleOutput link)
-        {
-            var image = root.AddImage(new Info("Node", 0, 0, 100, 100), Assets.ConnectionNode);
-            image.AddText(new Info("Text", 100, 0, 200, 40, new Vector2(1, 0.5f)), link.Name, 40, Il2CppTMPro.TextAlignmentOptions.MidlineLeft).EnableAutoSizing();
-            image.Image.color = EditorUI.GetColorForNode(link.Type);
-            var moduleLink = image.AddComponent<ModuleOutputHolder>();
-            moduleLink.link = link;
-            ModuleOutputHolder.GuidToHolder.Add(link.Id, moduleLink);
+            
         }
 
         public void Init()
         {
             if (HasInited) return;
             HasInited = true;
+            
             GetLinkNodes();
             GetModuleProperties();
         }

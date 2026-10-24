@@ -1,4 +1,4 @@
-﻿using Debug = UnityEngine.Debug;
+﻿
 
 namespace FactoryCore.UI
 {
@@ -8,7 +8,7 @@ namespace FactoryCore.UI
 
         public abstract Dictionary<Type, Color> NodeColors { get; }
         public abstract ContextMenuInfo ContextMenu { get; }
-        public abstract Type CenteredModule { get; }
+        public virtual Type CenteredModule { get; }
 
         public DragComponent? DragObject;
         public bool IsDraggingBackground;
@@ -27,8 +27,9 @@ namespace FactoryCore.UI
         public static Template Template;
 
         public GameObject? HoveredGameObject;
-        public bool ShouldNestedContextMenusGoLeft = false;
-        
+        public bool ShouldNestedContextMenusGoLeft;
+
+        private static ModuleRootMonoBehavior moduleRootTemplate;
         
         public float MagicalScalingNumber => Canvas.scaleFactor / 2;
 
@@ -89,21 +90,23 @@ namespace FactoryCore.UI
             {
                 MenuContent.gameObject.transform.position += Input.mousePosition - MouseLastPosition;
             }
+            
             DragObject?.UpdateDrag(Input.mousePosition - MouseLastPosition);
             MouseLastPosition = Input.mousePosition;
 
             if (Input.GetMouseButtonDown(1) && !IsDraggingBackground)
             {
-                if (HoveredGameObject == null)
+                if (!HoveredGameObject)
                     CreateContextMenu(ContextMenu);
+                
                 var tab = HoveredGameObject?.gameObject.GetComponentInParent<DraggableTab>();
                 
-                if (tab != null && tab.transform.parent.GetComponentInChildren<ModuleHolder>().Module.IsDuplicable)
+                if (tab && tab.moduleRoot.module.IsDuplicable)
                 {
                     ContextMenuInfo contextMenuInfo = ContextMenuBuilder.Create(500)
                         .WithButton("Duplicate", () =>
                         {
-                            CreateModule(tab.transform.parent.GetComponentInChildren<ModuleHolder>().Module.GetType(), tab.transform.parent.transform.position + new Vector3(100, -100));
+                            CreateNewModule(tab.moduleRoot.module.GetType(), tab.transform.parent.transform.position + new Vector3(100, -100));
                         });
                     CreateContextMenu(contextMenuInfo);
                 }  
@@ -130,7 +133,7 @@ namespace FactoryCore.UI
         }
         public void CloseContextMenu(bool failIfHovering = false)
         {
-            if (failIfHovering && HoveredGameObject?.GetComponentInParent<ContextMenuEntryMonoBehavior>() != null)
+            if (failIfHovering && HoveredGameObject?.GetComponentInParent<ContextMenuEntryMonoBehavior>())
                 return;
             
             contextPanel?.DeleteObject();
@@ -157,43 +160,22 @@ namespace FactoryCore.UI
             });
 
         }
+
         public ModHelperPanel CreateModuleUI(Module module)
         {
-            var moduleRoot = MenuContent.AddPanel(new Info("ModuleRoot", 0, 0, 0, 0));
-            moduleRoot.transform.localPosition = new Vector3(module.XPosition, module.YPosition, 0);
-            moduleRoot.AddComponent<VerticalLayoutGroup>();
+            if (!moduleRootTemplate)
+                moduleRootTemplate = ModuleRootMonoBehavior.CreateTemplateModule();
+            
+            var moduleRoot = GameObject.Instantiate(moduleRootTemplate.gameObject, MenuContent.transform).GetComponent<ModuleRootMonoBehavior>();
+            moduleRoot.SetModule(module);
 
-            var component = moduleRoot.AddPanel(new Info("Component", 1000, 700, new Vector2(0.5f, 0.5f)), VanillaSprites.MainBGPanelBlue, RectTransform.Axis.Vertical, 0, 0);
-            var holder = component.AddComponent<ModuleHolder>().Init(module, moduleRoot, component);
-            component.FitContent(ContentSizeFitter.FitMode.Unconstrained, ContentSizeFitter.FitMode.PreferredSize);
-
-            var dragBar = moduleRoot.AddPanel(new Info("DragBar", 0, 0, 1000, 150, new Vector2(0.5f, 0.5f)), VanillaSprites.MainBGPanelBlue);
-            dragBar.AddComponent<DraggableTab>().Init(moduleRoot.transform);
-            dragBar.AddText(new Info("Text", 400, 0, 700, 100, new Vector2(0f, 0.5f)), module.Name, 60, Il2CppTMPro.TextAlignmentOptions.MidlineLeft).EnableAutoSizing();
-            if (module.IsRemovable)
-            {
-                dragBar.AddButton(new Info("Delete", -75, 0, 100, 100, new Vector2(1, 0.5f)), VanillaSprites.AddRemoveBtn, new Action(() =>
-                {
-                    holder.Delete();
-                    Template.modules.Remove(module);
-                }));
-            }
-            if (module.Description != string.Empty)
-            {
-                dragBar.AddButton(new Info("Info", module.IsRemovable ? -200 : -75, 0, 100, 100, new Vector2(1, 0.5f)), VanillaSprites.InfoBtn2, new Action(() =>
-                {
-                    PopupScreen.instance.SafelyQueue(screen => screen.ShowPopup(PopupScreen.Placement.inGameCenter, "Info", module.Description, null, "Ok", null, null, Popup.TransitionAnim.Scale));
-                }));
-            }
-            dragBar.transform.SetSiblingIndex(0);
-
-            return moduleRoot;
+            return moduleRoot.GetComponent<ModHelperPanel>();
         }
-        public void CreateModule(Type moduleType)
+        public void CreateNewModule(Type moduleType)
         {
-            CreateModule(moduleType, selectedContextPosition);
+            CreateNewModule(moduleType, selectedContextPosition);
         }
-        public void CreateModule(Type moduleType, Vector2 position)
+        public void CreateNewModule(Type moduleType, Vector2 position)
         {
             Module module = (Module)Activator.CreateInstance(moduleType);
             module.Template = Template;
@@ -201,16 +183,10 @@ namespace FactoryCore.UI
             module.Init();
             CreateModuleUI(module).transform.position = position;
         }
-        public void LoadTemplateUI()
-        {
-            foreach (var module in Template.modules)
-            {
-                CreateModuleUI(module);
-            }
-        }
+        
         public IEnumerator LoadTemplate()
         {
-            List<int> generateTimes = new List<int>();
+            var watch = Stopwatch.StartNew();
             foreach (var module in Template.modules)
             {
                 try
@@ -224,13 +200,11 @@ namespace FactoryCore.UI
             }
             foreach (var module in Template.modules)
             {
-                var watch = Stopwatch.StartNew();
                 CreateModuleUI(module);
-                watch.Stop();
-                generateTimes.Add((int)watch.ElapsedMilliseconds);
                 yield return null;
             }
-            MelonLogger.Msg($"Loaded modules in {generateTimes.Average()}ms per module");
+            yield return null;
+            MelonLogger.Msg($"Loaded modules in {watch.ElapsedMilliseconds}ms");
         }
 
         public static GameObject? PollForHoveredObjects()

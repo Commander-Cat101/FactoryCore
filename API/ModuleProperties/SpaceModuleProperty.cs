@@ -8,10 +8,14 @@
         {
             this.Height = Height;
         }
-
-        public override ModHelperPanel GetVisual(ModHelperPanel root)
+        public override ModHelperPanel CreateTemplate()
         {
-            return root.AddPanel(new Info("Space", 0, 0, 1000, Height));
+            return ModHelperPanel.Create(new Info("Space", 0, 0, 1000, Height));
+        }
+
+        public override void SetupProperty(ModHelperPanel root)
+        {
+            root.RectTransform.sizeDelta = new Vector2(1000, Height);
         }
 
         public override void LoadData()

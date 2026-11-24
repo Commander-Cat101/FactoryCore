@@ -12,16 +12,23 @@
             MaxValue = maxValue;
             Name = name;
         }
-        public override ModHelperPanel GetVisual(ModHelperPanel root)
+        public override ModHelperPanel CreateTemplate()
         {
-            var panel = root.AddPanel(new Info("FloatModuleValue", 0, 0, 1000, 100));
-            panel.AddText(new Info("Text", -200, 0, 500, 50), $"{Name}", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
-            ModHelperInputField field = null;
-            field = panel.AddInputField(new Info("Input", 250, 0, 400, 50), Module.GetValue<float>(Name).ToString(), VanillaSprites.BlueInsertPanel, new Action<string>((value) =>
-            {
-                
-            }), 30, Il2CppTMPro.TMP_InputField.CharacterValidation.Decimal);
+            var panel = ModHelperPanel.Create(new Info("FloatModuleValue", 0, 0, 1000, 100));
+            panel.AddText(new Info("Text", -200, 0, 500, 50), "Property Name", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
+            
+            panel.AddInputField(new Info("Input", 250, 0, 400, 50), "0", VanillaSprites.BlueInsertPanel, null, 30, Il2CppTMPro.TMP_InputField.CharacterValidation.Decimal);
+            
+            return panel;
+        }
 
+        public override void SetupProperty(ModHelperPanel root)
+        {
+            root.transform.Find("Text").GetComponent<ModHelperText>().SetText(Name);
+            
+            ModHelperInputField field = root.transform.Find("Input").GetComponent<ModHelperInputField>();
+            field.SetText(Module.GetValue<float>(Name).ToString());
+            
             field.InputField.onEndEdit.AddListener(new Action<string>((value) =>
             {
                 if (float.TryParse(value, out float result))
@@ -31,9 +38,8 @@
                     Module.SetValue(result, Name);
                 }
             }));
-
-            return panel;
         }
+
         public override void LoadData()
         {
             if (!Module.HasValue(Name))

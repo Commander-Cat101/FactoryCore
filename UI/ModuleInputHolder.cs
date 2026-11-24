@@ -3,13 +3,7 @@
     [RegisterTypeInIl2Cpp(false)]
     internal class ModuleInputHolder : MonoBehaviour
     {
-        public static Dictionary<Type, Color> ColorByLinkType = new Dictionary<Type, Color>()
-        {
-            { typeof(float), Color.red },
-            { typeof(bool), Color.blue }
-        };
-
-        public static Dictionary<Guid, ModuleInputHolder> GuidToHolder = new Dictionary<Guid, ModuleInputHolder>();
+        public static Dictionary<Guid, ModuleInputHolder> GuidToHolder = new();
 
         public RectTransform tempLine;
 

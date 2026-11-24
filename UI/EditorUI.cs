@@ -6,7 +6,7 @@
 
         public abstract Dictionary<Type, Color> NodeColors { get; }
         public abstract ContextMenuInfo ContextMenu { get; }
-        public abstract Type CenteredModule { get; }
+        public virtual Type CenteredModule { get; }
 
         public DragComponent? DragObject;
         public bool IsDraggingBackground;
@@ -25,8 +25,13 @@
         public static Template Template;
 
         public GameObject? HoveredGameObject;
+        public bool ShouldNestedContextMenusGoLeft;
 
+        private static ModuleRootMonoBehavior moduleRootTemplate;
+        
         public float MagicalScalingNumber => Canvas.scaleFactor / 2;
+
+        public abstract void SaveTemplate();
 
         public override bool OnMenuOpened(Il2CppSystem.Object data)
         {
@@ -77,49 +82,38 @@
                 DragObject = null;
             }
 
+            HoveredGameObject = PollForHoveredObjects();
+
             if (IsDraggingBackground)
             {
                 MenuContent.gameObject.transform.position += Input.mousePosition - MouseLastPosition;
             }
+            
             DragObject?.UpdateDrag(Input.mousePosition - MouseLastPosition);
             MouseLastPosition = Input.mousePosition;
 
             if (Input.GetMouseButtonDown(1) && !IsDraggingBackground)
             {
-                if (HoveredGameObject == null)
+                if (!HoveredGameObject)
                     CreateContextMenu(ContextMenu);
+                
                 var tab = HoveredGameObject?.gameObject.GetComponentInParent<DraggableTab>();
-                if (tab != null && tab.transform.parent.GetComponentInChildren<ModuleHolder>().Module.IsDuplicable)
+                
+                if (tab && tab.moduleRoot.module.IsDuplicable)
                 {
                     ContextMenuInfo contextMenuInfo = ContextMenuBuilder.Create(500)
                         .WithButton("Duplicate", () =>
                         {
-                            CreateModule(tab.transform.parent.GetComponentInChildren<ModuleHolder>().Module.GetType(), tab.transform.parent.transform.position + new Vector3(100, -100));
+                            CreateNewModule(tab.moduleRoot.module.GetType(), tab.transform.parent.transform.position + new Vector3(100, -100));
                         });
                     CreateContextMenu(contextMenuInfo);
-                }
-                    
+                }  
             }
-
-            var pointer = new PointerEventData(EventSystem.current)
-            {
-                position = Input.mousePosition
-            };
-            Il2CppSystem.Collections.Generic.List<RaycastResult> raycastResultsIL2CPP = new Il2CppSystem.Collections.Generic.List<RaycastResult>();
-            EventSystem.current.RaycastAll(pointer, raycastResultsIL2CPP);
-            List<RaycastResult> raycastResults = raycastResultsIL2CPP.ToList().Where(a => a.gameObject.GetComponentInParent<CommonBackgroundScreen>() == null).ToList();
-            HoveredGameObject = raycastResults.FirstOrDefault()?.gameObject;
-
+            
             if (Input.mouseScrollDelta.y != 0)
             {
                 CloseContextMenu();
-                float prevScale = Scaling;
                 Scaling = Mathf.Clamp(Scaling + (Input.mouseScrollDelta.y / 10), 0.5f, 2.5f);
-                if (Scaling == prevScale)
-                    return;
-                float scaleDiff = Scaling - prevScale;
-                var mousePos = Input.mousePosition;
-
                 ScalePanel.transform.localScale = Vector3.one * Scaling;
             }
         }
@@ -137,8 +131,9 @@
         }
         public void CloseContextMenu(bool failIfHovering = false)
         {
-            if (failIfHovering && HoveredGameObject?.GetComponentInParent<ContextMenuEntryMonoBehavior>() != null)
+            if (failIfHovering && HoveredGameObject?.GetComponentInParent<ContextMenuEntryMonoBehavior>())
                 return;
+            
             contextPanel?.DeleteObject();
             contextPanel = null;
         }
@@ -148,51 +143,37 @@
 
             contextPanel = ExtrasPanel.AddModHelperComponent(ContextMenuPanel.CreateContextPanel(info));
             selectedContextPosition = Input.mousePosition;
+            
             contextPanel.transform.position = ClampPositionInsideCanvasSpace(selectedContextPosition, new Vector2(contextPanel.RectTransform.sizeDelta.x, ContextMenu.GetEstimatedHeight()));
-
+            
             TaskScheduler.ScheduleTask(() =>
             {
+                ShouldNestedContextMenusGoLeft =
+                    Canvas.GetComponent<RectTransform>().rect.width / 2 * Canvas.scaleFactor  <
+                    selectedContextPosition.x;
+                
+                MelonLogger.Msg(ShouldNestedContextMenusGoLeft);
+                
                 contextPanel.transform.position = ClampPositionInsideCanvasSpace(selectedContextPosition, contextPanel.RectTransform.sizeDelta);
             });
 
         }
+
         public ModHelperPanel CreateModuleUI(Module module)
         {
-            var moduleRoot = MenuContent.AddPanel(new Info("ModuleRoot", 0, 0, 0, 0));
-            moduleRoot.transform.localPosition = new Vector3(module.XPosition, module.YPosition, 0);
-            moduleRoot.AddComponent<VerticalLayoutGroup>();
+            if (!moduleRootTemplate)
+                moduleRootTemplate = ModuleRootMonoBehavior.CreateTemplateModule();
+            
+            var moduleRoot = GameObject.Instantiate(moduleRootTemplate.gameObject, MenuContent.transform).GetComponent<ModuleRootMonoBehavior>();
+            moduleRoot.SetModule(module);
 
-            var component = moduleRoot.AddPanel(new Info("Component", 1000, 700, new Vector2(0.5f, 0.5f)), VanillaSprites.MainBGPanelBlue, RectTransform.Axis.Vertical, 0, 0);
-            var holder = component.AddComponent<ModuleHolder>().Init(module, moduleRoot, component);
-            component.FitContent(ContentSizeFitter.FitMode.Unconstrained, ContentSizeFitter.FitMode.PreferredSize);
-
-            var dragBar = moduleRoot.AddPanel(new Info("DragBar", 0, 0, 1000, 150, new Vector2(0.5f, 0.5f)), VanillaSprites.MainBGPanelBlue);
-            dragBar.AddComponent<DraggableTab>().Init(moduleRoot.transform);
-            dragBar.AddText(new Info("Text", 400, 0, 700, 100, new Vector2(0f, 0.5f)), module.Name, 60, Il2CppTMPro.TextAlignmentOptions.MidlineLeft).EnableAutoSizing();
-            if (module.IsRemovable)
-            {
-                dragBar.AddButton(new Info("Delete", -75, 0, 100, 100, new Vector2(1, 0.5f)), VanillaSprites.AddRemoveBtn, new Action(() =>
-                {
-                    holder.Delete();
-                    Template.modules.Remove(module);
-                }));
-            }
-            if (module.Description != string.Empty)
-            {
-                dragBar.AddButton(new Info("Info", module.IsRemovable ? -200 : -75, 0, 100, 100, new Vector2(1, 0.5f)), VanillaSprites.InfoBtn2, new Action(() =>
-                {
-                    PopupScreen.instance.SafelyQueue(screen => screen.ShowPopup(PopupScreen.Placement.inGameCenter, "Info", module.Description, null, "Ok", null, null, Popup.TransitionAnim.Scale));
-                }));
-            }
-            dragBar.transform.SetSiblingIndex(0);
-
-            return moduleRoot;
+            return moduleRoot.GetComponent<ModHelperPanel>();
         }
-        public void CreateModule(Type moduleType)
+        public void CreateNewModule(Type moduleType)
         {
-            CreateModule(moduleType, selectedContextPosition);
+            CreateNewModule(moduleType, selectedContextPosition);
         }
-        public void CreateModule(Type moduleType, Vector2 position)
+        public void CreateNewModule(Type moduleType, Vector2 position)
         {
             Module module = (Module)Activator.CreateInstance(moduleType);
             module.Template = Template;
@@ -200,16 +181,10 @@
             module.Init();
             CreateModuleUI(module).transform.position = position;
         }
-        public void LoadTemplateUI()
-        {
-            foreach (var module in Template.modules)
-            {
-                CreateModuleUI(module);
-            }
-        }
+        
         public IEnumerator LoadTemplate()
         {
-            List<int> generateTimes = new List<int>();
+            var watch = Stopwatch.StartNew();
             foreach (var module in Template.modules)
             {
                 try
@@ -223,16 +198,24 @@
             }
             foreach (var module in Template.modules)
             {
-                var watch = Stopwatch.StartNew();
                 CreateModuleUI(module);
-                watch.Stop();
-                generateTimes.Add((int)watch.ElapsedMilliseconds);
                 yield return null;
             }
-            MelonLogger.Msg($"Loaded modules in {generateTimes.Average()}ms per module");
+            yield return null;
+            MelonLogger.Msg($"Loaded modules in {watch.ElapsedMilliseconds}ms");
         }
-        public abstract void SaveTemplate();
 
+        public static GameObject? PollForHoveredObjects()
+        {
+            var pointer = new PointerEventData(EventSystem.current)
+            {
+                position = Input.mousePosition
+            };
+            Il2CppSystem.Collections.Generic.List<RaycastResult> raycastResultsIL2CPP = new Il2CppSystem.Collections.Generic.List<RaycastResult>();
+            EventSystem.current.RaycastAll(pointer, raycastResultsIL2CPP);
+            List<RaycastResult> raycastResults = raycastResultsIL2CPP.ToList().Where(a => a.gameObject.GetComponentInParent<CommonBackgroundScreen>() == null).ToList();
+            return raycastResults.FirstOrDefault()?.gameObject;
+        }
         public static Color GetColorForNode(Type nodeType)
         {
             if (Instance.NodeColors.TryGetValue(nodeType, out var color))
@@ -244,14 +227,13 @@
 
         public static Vector2 ClampPositionInsideCanvasSpace(Vector2 position, Vector2 sizeDelta)
         {
-            float magicNumber = (EditorUI.Instance.Canvas.scaleFactor / 2f);
-
-            float min = sizeDelta.y * EditorUI.Instance.Canvas.scaleFactor;
-
-            float max = EditorUI.Instance.Canvas.GetComponent<RectTransform>().rect.height - sizeDelta.y * magicNumber;
-            float y = Mathf.Clamp(position.y, min, max);
-
-            return new Vector2(position.x, y);
+            var canvas = Instance.Canvas;
+            var canvasRect = canvas.GetComponent<RectTransform>().rect;
+            
+            float y = Mathf.Clamp(position.y, sizeDelta.y * canvas.scaleFactor, canvasRect.height - (sizeDelta.y / 2) * canvas.scaleFactor);
+            float x = Math.Min(position.x, (canvasRect.width - sizeDelta.x) * canvas.scaleFactor);
+            
+            return new Vector2(x, y);
         }
     }
 }

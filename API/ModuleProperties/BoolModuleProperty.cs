@@ -1,39 +1,46 @@
 ﻿using FactoryCore.API.ModuleValues;
 
-namespace FactoryCore.API.ModuleProperties
-{
-    public class BoolModuleProperty : ModuleProperty
-    {
-        internal bool DefaultValue;
-        public BoolModuleProperty(string name, bool defaultValue)
-        {
-            Name = name;
-            DefaultValue = defaultValue;
-        }
+namespace FactoryCore.API.ModuleProperties;
 
-        public override ModHelperPanel GetVisual(ModHelperPanel root)
+public class BoolModuleProperty : ModuleProperty
+{
+    internal bool DefaultValue;
+    public BoolModuleProperty(string name, bool defaultValue)
+    {
+        Name = name;
+        DefaultValue = defaultValue;
+    }
+
+    public override ModHelperPanel CreateTemplate()
+    {
+        var panel = ModHelperPanel.Create(new Info("BoolModuleValue", 0, 0, 1000, 100));
+        panel.AddText(new Info("Text", -200, 0, 500, 50), $"Property Name", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
+        var button = panel.AddButton(new Info("Toggle", -150, 0, 100, 100, new Vector2(1, 0.5f)), "",null);
+        button.Image.SetSprite(Assets.OffBtn);
+        return panel;
+    }
+
+    public override void SetupProperty(ModHelperPanel root)
+    {
+        root.transform.Find("Text").GetComponent<Text>().text = Name;
+        var button = root.transform.Find("Toggle").GetComponent<ModHelperButton>();
+        button.Button.SetOnClick(() =>
         {
-            var panel = root.AddPanel(new Info("BoolModuleValue", 0, 0, 1000, 100));
-            panel.AddText(new Info("Text", -200, 0, 500, 50), $"{Name}", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
-            ModHelperButton? button = null;
-            button = panel.AddButton(new Info("Toggle", -150, 0, 100, 100, new Vector2(1, 0.5f)), "", new Action(() =>
-            {
-                OnClick(button);
-            }));
-            var value = Module.GetValue<bool>(Name);
-            button.Image.SetSprite(value ? Assets.OnBtn : Assets.OffBtn);
-            return panel;
-        }
-        public override void LoadData()
-        {
-            if (!Module.HasValue(Name))
-                Module.SetValue(DefaultValue, Name);
-        }
-        public void OnClick(ModHelperButton? button)
-        {
-            var value = !Module.GetValue<bool>(Name);
-            Module.SetValue(value, Name);
-            button?.Image.SetSprite(value ? Assets.OnBtn : Assets.OffBtn);
-        }
+            OnClick(button);
+        });
+        button.Image.SetSprite(Module.GetValue<bool>(Name) ? Assets.OnBtn : Assets.OffBtn);
+    }
+
+    public override void LoadData()
+    {
+        if (!Module.HasValue(Name))
+            Module.SetValue(DefaultValue, Name);
+    }
+    public void OnClick(ModHelperButton? button)
+    {
+        var value = !Module.GetValue<bool>(Name);
+        Module.SetValue(value, Name);
+        button?.Image.SetSprite(value ? Assets.OnBtn : Assets.OffBtn);
     }
 }
+

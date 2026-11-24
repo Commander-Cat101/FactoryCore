@@ -1,4 +1,6 @@
-﻿namespace FactoryCore.API.ModuleValues
+﻿using UnityEngine.Events;
+
+namespace FactoryCore.API.ModuleValues
 {
     public class StringModuleProperty : ModuleProperty
     {
@@ -10,16 +12,27 @@
             MaxLength = maxLength;
             Name = name;
         }
-        public override ModHelperPanel GetVisual(ModHelperPanel root)
+        public override ModHelperPanel CreateTemplate()
         {
-            var panel = root.AddPanel(new Info("StringModuleValue", 0, 0, 1000, 100));
-            panel.AddText(new Info("Text", -200, 0, 500, 50), $"{Name}", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
-            panel.AddInputField(new Info("Input", 250, 0, 400, 50), Module.GetValue<string>(Name).ToString(), VanillaSprites.BlueInsertPanel, new Action<string>((value) =>
-            {
-                Module.SetValue(value, Name);
-            }), 30).InputField.characterLimit = MaxLength;
+            var panel = ModHelperPanel.Create(new Info("StringModuleValue", 0, 0, 1000, 100));
+            panel.AddText(new Info("Text", -200, 0, 500, 50), "Property Name", 50, Il2CppTMPro.TextAlignmentOptions.Left).EnableAutoSizing();
+            panel.AddInputField(new Info("Input", 250, 0, 400, 50), "Default Value", VanillaSprites.BlueInsertPanel, new Action<string>(value => {}), 30)
+                .InputField.characterLimit = MaxLength;
             return panel;
         }
+
+        public override void SetupProperty(ModHelperPanel root)
+        {
+            root.transform.Find("Text").GetComponent<ModHelperText>().SetText(Name);
+            
+            var input = root.transform.Find("Input").GetComponent<ModHelperInputField>();
+            input.InputField.SetText(Module.GetValue<string>(Name));
+            input.InputField.onValueChanged.AddListener(new Action<string>(value =>
+            {
+                Module.SetValue(value, Name);
+            }));
+        }
+
         public override void LoadData()
         {
             if (!Module.HasValue(Name))

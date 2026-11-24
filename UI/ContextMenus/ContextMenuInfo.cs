@@ -1,6 +1,6 @@
-﻿namespace FactoryCore.UI.ContextMenus
-{
-    public struct ContextMenuInfo
+﻿namespace FactoryCore.UI.ContextMenus;
+
+public struct ContextMenuInfo
     {
         internal int Width;
 
@@ -78,89 +78,13 @@
             return panel;
         }
     }
-    [RegisterTypeInIl2Cpp(false)]
-    internal class ContextMenuEntryMonoBehavior : MonoBehaviour
-    {
-        public bool isHovered = false;
-        public ContextMenuEntryMonoBehavior(IntPtr ptr) : base(ptr)
-        {
-        }
-
-        public ModHelperPanel panel;
-
-        public ModHelperText text;
-
-        public ContextMenuEntry entry;
-
-        public ContextMenuPanel contextMenu;
-
-        public ContextMenuPanel nestedMenu;
-        public void UnHover()
-        {
-            isHovered = false;
-            panel.Background.color = Color.clear;
-        }
-        public void Hover()
-        {
-            isHovered = true;
-            panel.Background.color = new Color(0, 0, 0, 0.25f);
-
-            if (entry is ContextMenuNestedMenu nestedEntry)
-            {
-                if (nestedMenu != null)
-                    return;
-
-                contextMenu.DestroyNestedMenus(this);
-                nestedMenu = panel.AddModHelperComponent(ContextMenuPanel.CreateContextPanel(nestedEntry.NestedMenu));
-
-                nestedMenu.transform.position = EditorUI.ClampPositionInsideCanvasSpace(panel.transform.position + new Vector3(contextMenu.contextInfo.Width * EditorUI.Instance.MagicalScalingNumber, 30), new Vector2(nestedMenu.RectTransform.sizeDelta.x, nestedEntry.NestedMenu.GetEstimatedHeight()));
-                TaskScheduler.ScheduleTask(() =>
-                {
-                    nestedMenu.transform.position = EditorUI.ClampPositionInsideCanvasSpace(panel.transform.position + new Vector3(contextMenu.contextInfo.Width * EditorUI.Instance.MagicalScalingNumber, 30), nestedMenu.RectTransform.sizeDelta);
-                });
-
-            }
-        }
-        public void RemoveNestedMenu()
-        {
-            if (nestedMenu != null)
-            {
-                nestedMenu.DeleteObject();
-                nestedMenu = null;
-            }
-        }
-        public void Update()
-        {
-            var hover = EditorUI.Instance.HoveredGameObject;
-            if (hover?.GetComponent<ContextMenuEntryMonoBehavior>() == this || hover?.GetComponent<ModHelperText>() == text)
-            {
-                if (!isHovered)
-                    Hover();
-            }
-            else
-            {
-                if (isHovered)
-                    UnHover();
-            }
-
-            if (Input.GetMouseButtonDown(0) && isHovered)
-            {
-                if (entry is ContextMenuButton buttonEntry)
-                {
-                    buttonEntry.onClick.Invoke();
-                    EditorUI.Instance.CloseContextMenu();
-                }
-            }
-        }
-    }
 
     public static class ContextMenuBuilder
     {
         public static ContextMenuInfo Create(int width)
         {
-            return new ContextMenuInfo() { Width = width, Entries = new List<ContextMenuEntry>() };
+            return new ContextMenuInfo { Width = width, Entries = new List<ContextMenuEntry>() };
         }
-
         public static ContextMenuInfo WithButton(this ContextMenuInfo info, string name, Action onClick)
         {
             info.Entries.Add(new ContextMenuButton(name, onClick));
@@ -169,7 +93,7 @@
         public static ContextMenuInfo WithButton(this ContextMenuInfo info, Type moduleType)
         {
             var module = (Module)Activator.CreateInstance(moduleType);
-            info.Entries.Add(new ContextMenuButton(module.Name, () => { EditorUI.Instance.CreateModule(moduleType); }));
+            info.Entries.Add(new ContextMenuButton(module.Name, () => { EditorUI.Instance.CreateNewModule(moduleType); }));
             return info;
         }
         public static ContextMenuInfo WithNested(this ContextMenuInfo info, string name, int nestedMenuWidth, Action<ContextMenuInfo> nestedMenu)
@@ -184,4 +108,3 @@
             return info;
         }
     }
-}

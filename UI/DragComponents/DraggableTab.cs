@@ -5,17 +5,17 @@
     {
         public DraggableTab(IntPtr ptr) : base(ptr) { }
 
-        private Transform RootObject;
+        public ModuleRootMonoBehavior moduleRoot;
 
-        public void Init(Transform rootObject)
+        public void Init(GameObject rootObject)
         {
-            RootObject = rootObject;
+            moduleRoot = rootObject.GetComponent<ModuleRootMonoBehavior>();
         }
         public override void UpdateDrag(Vector3 dragDifference)
         {
-            if (RootObject == null)
+            if (moduleRoot == null)
                 return;
-            RootObject.position += dragDifference;
+            moduleRoot.transform.position += dragDifference;
         }
     }
 }

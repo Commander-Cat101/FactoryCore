@@ -2,8 +2,8 @@ namespace FactoryCore;
 
 public static class ModHelperData
 {
-    public const string WorksOnVersion = "53";
-    public const string Version = "1.0.2";
+    public const string WorksOnVersion = "57.4";
+    public const string Version = "1.1.0";
     public const string Name = "FactoryCore";
 
     public const string Description = "A library for creating user-made content.";
